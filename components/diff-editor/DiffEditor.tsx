@@ -64,10 +64,12 @@ export function DiffEditor(props: Props) {
 
   return (
     <div className="space-y-8">
-      <p className="text-sm text-neutral-700" aria-live="polite">
-        {accepted} of {rewrite.suggestions.length} changes accepted.
-      </p>
-      <p className="text-sm text-neutral-700">Changes marked &quot;Check this&quot; are never accepted in bulk.</p>
+      <div className="space-y-1">
+        <p className="text-sm text-neutral-700" aria-live="polite">
+          {accepted} of {rewrite.suggestions.length} changes accepted.
+        </p>
+        <p className="text-sm text-neutral-700">Changes marked &quot;Check this&quot; are never accepted in bulk.</p>
+      </div>
       {bySection.map(({ section, suggestions }) => (
         <section key={section.id} aria-labelledby={`heading-${section.id}`} className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">

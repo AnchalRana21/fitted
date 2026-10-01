@@ -1,9 +1,9 @@
 "use client";
 
-import { diffWords } from "diff";
 import { Fragment, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import type { Decision } from "@/lib/apply";
+import { diffParts } from "@/lib/diff";
 
 type Props = {
   original: string;
@@ -39,7 +39,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
     }
   }, [editing]);
   const shown = decision?.text ?? newText;
-  const parts = diffWords(original, shown);
+  const parts = diffParts(original, shown);
 
   return (
     <article
@@ -56,15 +56,13 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-600">Original</h4>
           <p className="mt-1">
-            {parts.map((part, i) =>
-              part.added ? null : (
-                part.removed ? (
-                  <del key={i} className="text-red-700">
-                    {part.value}
-                  </del>
-                ) : (
-                  <span key={i}>{part.value}</span>
-                )
+            {parts.original.map((part, i) =>
+              part.changed ? (
+                <del key={i} className="text-red-700">
+                  {part.text}
+                </del>
+              ) : (
+                <span key={i}>{part.text}</span>
               ),
             )}
           </p>
@@ -86,18 +84,16 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
             </>
           ) : (
             <p className="mt-1">
-              {parts.map((part, i) =>
-                part.removed ? null : (
-                  part.added ? (
-                    <ins
-                      key={i}
-                      className="rounded bg-emerald-100 text-emerald-950 underline decoration-emerald-700 underline-offset-2"
-                    >
-                      {part.value}
-                    </ins>
-                  ) : (
-                    <span key={i}>{part.value}</span>
-                  )
+              {parts.suggested.map((part, i) =>
+                part.changed ? (
+                  <ins
+                    key={i}
+                    className="rounded bg-emerald-100 text-emerald-950 underline decoration-emerald-700 underline-offset-2"
+                  >
+                    {part.text}
+                  </ins>
+                ) : (
+                  <span key={i}>{part.text}</span>
                 ),
               )}
             </p>
