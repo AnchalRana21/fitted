@@ -128,7 +128,6 @@ export function TailorView({ id }: { id: string }) {
             resume={run.resume}
             rewrite={run.rewrite}
             partial={rewrite.partial}
-            status={run.rewrite ? "done" : rewrite.status}
             error={rewrite.error}
             waitingForAnalysis={!run.analysis}
             decisions={run.decisions}

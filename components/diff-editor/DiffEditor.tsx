@@ -1,6 +1,6 @@
 "use client";
 
-import type { StreamError, StreamStatus } from "@/hooks/useStream";
+import type { StreamError } from "@/hooks/useStream";
 import { acceptAllSafe, resetDecisions, type Decisions } from "@/lib/apply";
 import type { Resume, Rewrite, Suggestion } from "@/lib/schemas";
 import type { DeepPartial } from "@/lib/types";
@@ -12,7 +12,6 @@ type Props = {
   resume: Resume;
   rewrite?: Rewrite;
   partial: unknown;
-  status: StreamStatus;
   error: StreamError | null;
   waitingForAnalysis: boolean;
   decisions: Decisions;
@@ -27,9 +26,12 @@ export function DiffEditor(props: Props) {
   if (!rewrite) {
     if (error) return <ErrorNotice error={error} onRetry={onRetry} />;
     if (waitingForAnalysis) return <p role="status" className="text-neutral-700">Suggestions start once the analysis is done.</p>;
-    const drafts = ((partial as DeepPartial<Rewrite> | null)?.suggestions ?? []).filter(
-      (s) => s?.bulletId && s.newText && originals.has(s.bulletId),
-    );
+    const seen = new Set<string>();
+    const drafts = ((partial as DeepPartial<Rewrite> | null)?.suggestions ?? []).filter((s) => {
+      if (!s?.bulletId || !s.newText || !originals.has(s.bulletId) || seen.has(s.bulletId)) return false;
+      seen.add(s.bulletId);
+      return true;
+    });
     return (
       <div className="space-y-4">
         <p role="status" className="text-neutral-700">
@@ -73,9 +75,9 @@ export function DiffEditor(props: Props) {
       {bySection.map(({ section, suggestions }) => (
         <section key={section.id} aria-labelledby={`heading-${section.id}`} className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 id={`heading-${section.id}`} className="text-lg font-semibold">
+            <h2 id={`heading-${section.id}`} className="text-lg font-semibold">
               {section.title}
-            </h3>
+            </h2>
             <div className="flex gap-2">
               <Button
                 variant="secondary"
