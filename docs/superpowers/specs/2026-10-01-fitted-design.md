@@ -2,7 +2,7 @@
 
 Date: 2026-10-01
 Owner: Anchal Rana
-Status: Approved design, pending spec review
+Status: Implemented (v1)
 
 ## Goal
 

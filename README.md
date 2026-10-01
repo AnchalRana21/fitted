@@ -29,7 +29,7 @@ flowchart LR
   F -->|accepted changes| G[PDF / Markdown]
 ```
 
-- **Structured output.** Each AI route sends a JSON schema generated from the same Zod schema the browser uses (`lib/schemas.ts`). The server parses partial JSON as it streams and forwards it as newline-delimited JSON events, so the UI fills in field by field.
+- **Structured output.** The analysis and rewrite routes send a JSON schema generated from the same Zod schema the browser uses (`lib/schemas.ts`). The server parses partial JSON as it streams and forwards it as newline-delimited JSON events, so the UI fills in field by field.
 - **Validation everywhere.** Request bodies and final AI output are checked with Zod. An invalid response is retried once.
 - **Upload checks.** Resumes can be PDF or DOCX, up to 4 MB (under Vercel's request size limit) and 20 PDF pages. The server checks the file's real PDF or DOCX signature, not just its name or type.
 - **Cost controls.** The demo is rate limited through Upstash Redis: 15 AI calls per IP per day, plus a global cap of 150 AI calls per day across all visitors. If the limiter itself errors, AI routes fail closed and show a "busy" message instead of running unmetered. When a visitor closes the tab, the in-flight Claude request is aborted. If you deploy your own copy, also set a monthly spend limit on your Anthropic key as the final backstop.
