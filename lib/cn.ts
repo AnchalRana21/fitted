@@ -5,12 +5,12 @@ import { extendTailwindMerge } from "tailwind-merge";
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
-      animate: ["flash"],
+      animate: ["flash", "overlay-in", "dialog-in"],
       color: [
         "canvas", "surface", "surface-muted", "band", "ink", "ink-2", "ink-3", "border", "border-strong", "input",
         "primary", "primary-hover", "on-primary", "primary-subtle", "primary-text",
         "secondary", "secondary-hover", "on-secondary", "secondary-subtle", "secondary-text",
-        "danger", "danger-subtle", "warning-text", "warning-subtle",
+        "danger", "danger-hover", "on-danger", "danger-subtle", "warning-text", "warning-subtle",
       ],
     },
   },

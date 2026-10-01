@@ -39,6 +39,8 @@ export const TOKENS: { group: string; description: string; tokens: ColorToken[] 
     description: "Reserved for state. Danger for errors and deletions, warning for things to double-check.",
     tokens: [
       { name: "danger", light: "#b42318", dark: "#ff8a80", usage: "Errors, deletions", utility: "text" },
+      { name: "danger-hover", light: "#912018", dark: "#ffa39b", usage: "Destructive button hover" },
+      { name: "on-danger", light: "#ffffff", dark: "#0b1220", usage: "Text on danger", utility: "text" },
       { name: "danger-subtle", light: "#fef3f2", dark: "#3a1414", usage: "Error backgrounds" },
       { name: "warning-text", light: "#8a4b00", dark: "#ffc97a", usage: "Warning text", utility: "text" },
       { name: "warning-subtle", light: "#fff4e0", dark: "#33270f", usage: "Warning backgrounds" },

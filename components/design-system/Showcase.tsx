@@ -7,6 +7,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses, type ButtonSize, type ButtonVariant } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { Field, Textarea, controlClasses } from "@/components/ui/Field";
 import { ScoreRing } from "@/components/ui/ScoreRing";
@@ -15,7 +16,7 @@ import { Stat } from "@/components/ui/Stat";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/ui/Tabs";
 import type { Decision, DecisionStatus } from "@/lib/apply";
 
-const VARIANTS: ButtonVariant[] = ["primary", "secondary", "ghost", "success"];
+const VARIANTS: ButtonVariant[] = ["primary", "secondary", "ghost", "success", "danger"];
 const SIZES: ButtonSize[] = ["md", "sm"];
 
 function Demo({ title, usage, description, children }: { title: string; usage: string; description: string; children: ReactNode }) {
@@ -43,13 +44,46 @@ function DemoSuggestion({ initial, original, newText, reason, verify = false }: 
   );
 }
 
+const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+function DemoConfirm() {
+  const [open, setOpen] = useState<"danger" | "primary" | null>(null);
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button variant="danger" onClick={() => setOpen("danger")}>
+        Delete run…
+      </Button>
+      <Button variant="secondary" onClick={() => setOpen("primary")}>
+        Replace letter…
+      </Button>
+      <ConfirmDialog
+        open={open === "danger"}
+        onOpenChange={(next) => setOpen(next ? "danger" : null)}
+        title="Delete this run?"
+        description="“Senior Frontend Engineer at Acme” will be removed from this browser. This can't be undone."
+        confirmLabel="Delete run"
+        tone="danger"
+        onConfirm={() => wait(600)}
+      />
+      <ConfirmDialog
+        open={open === "primary"}
+        onOpenChange={(next) => setOpen(next ? "primary" : null)}
+        title="Replace your cover letter?"
+        description="Writing a new version replaces the current letter, including any edits you made."
+        confirmLabel="Write new version"
+        onConfirm={() => wait(600)}
+      />
+    </div>
+  );
+}
+
 export function Showcase() {
   return (
     <div className="grid gap-6">
       <Demo
         title="Button"
         usage={'<Button variant="primary" size="md">  ·  buttonClasses("secondary") for links'}
-        description="Pill-shaped. One primary action per view; secondary for alternatives, ghost for low-emphasis, success to confirm an accepted state."
+        description="Pill-shaped. One primary action per view; secondary for alternatives, ghost for low-emphasis, success to confirm an accepted state, danger for destructive confirmations."
       >
         <div className="space-y-5">
           {SIZES.map((size) => (
@@ -177,6 +211,14 @@ export function Showcase() {
           <CopyButton text="Fitted design system" label="Copy text" />
         </Demo>
       </div>
+
+      <Demo
+        title="ConfirmDialog"
+        usage={'<ConfirmDialog open onOpenChange title description confirmLabel tone="danger" onConfirm />'}
+        description="Replaces browser confirm boxes (lint bans alert, confirm and prompt). Focus starts on Cancel; Escape cancels, the backdrop doesn't. An async onConfirm shows Working… until it settles."
+      >
+        <DemoConfirm />
+      </Demo>
 
       <Demo
         title="SuggestionCard"

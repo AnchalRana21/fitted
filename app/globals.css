@@ -25,6 +25,8 @@
   --c-secondary-subtle: #d9f3ef;
   --c-secondary-text: #08594f;
   --c-danger: #b42318;
+  --c-danger-hover: #912018;
+  --c-on-danger: #ffffff;
   --c-danger-subtle: #fef3f2;
   --c-warning-text: #8a4b00;
   --c-warning-subtle: #fff4e0;
@@ -54,6 +56,8 @@
   --c-secondary-subtle: #0f2f30;
   --c-secondary-text: #8ce8db;
   --c-danger: #ff8a80;
+  --c-danger-hover: #ffa39b;
+  --c-on-danger: #0b1220;
   --c-danger-subtle: #3a1414;
   --c-warning-text: #ffc97a;
   --c-warning-subtle: #33270f;
@@ -83,6 +87,8 @@
   --color-secondary-subtle: var(--c-secondary-subtle);
   --color-secondary-text: var(--c-secondary-text);
   --color-danger: var(--c-danger);
+  --color-danger-hover: var(--c-danger-hover);
+  --color-on-danger: var(--c-on-danger);
   --color-danger-subtle: var(--c-danger-subtle);
   --color-warning-text: var(--c-warning-text);
   --color-warning-subtle: var(--c-warning-subtle);
@@ -97,6 +103,16 @@
   @keyframes flash {
     0%, 40% { background-color: color-mix(in srgb, var(--c-secondary) 22%, white); }
     100% { background-color: transparent; }
+  }
+  --animate-overlay-in: overlay-in 150ms var(--ease-out);
+  --animate-dialog-in: dialog-in 200ms var(--ease-out);
+  @keyframes overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes dialog-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
   }
 }
 

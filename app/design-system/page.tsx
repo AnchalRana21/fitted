@@ -99,7 +99,7 @@ export default function DesignSystemPage() {
           {[
             { value: TOKEN_COUNT, label: "Colour tokens" },
             { value: 2, label: "Themes" },
-            { value: 12, label: "Components" },
+            { value: 13, label: "Components" },
             { value: "AA", label: "Contrast" },
           ].map((s) => (
             <Stat key={s.label} value={s.value} label={s.label} className="border-l-2 border-primary pl-3" />

@@ -45,6 +45,8 @@ All tokens are CSS custom properties, mapped into Tailwind v4 with `@theme inlin
 | secondary-subtle | #D9F3EF | #0F2F30 | added-word highlight, accepted card bg |
 | secondary-text | #08594F | #8CE8DB | |
 | danger | #B42318 | #FF8A80 | removed words, errors |
+| danger-hover | #912018 | #FFA39B | destructive button hover (white 8.66:1 / #0B1220 9.78:1) |
+| on-danger | #FFFFFF | #0B1220 | text on danger (6.57:1 / 8.20:1) |
 | danger-subtle | #FEF3F2 | #3A1414 | |
 | warning-text | #8A4B00 | #FFC97A | "Check this" |
 | warning-subtle | #FFF4E0 | #33270F | |
@@ -53,7 +55,7 @@ Also: font Inter (next/font); type scale 12/14/15/18/24/32; spacing on Tailwind'
 
 ## Components (`components/ui`)
 
-Button (primary, secondary, ghost, success; sizes sm/md; supports `aria-pressed`), Card (outline / raised), Field (label, hint, error wiring) with Textarea, Badge (neutral/primary/success/warning/danger; pill "chip" shape for skills), Alert (danger/warning/info/success, role alert or status), Tabs (Radix, supports forceMount + hidden inactive panels), ScoreRing, Stat, Skeleton, ThemeToggle, CopyButton (rebuilt on Button). Class merging through a `cn()` helper (clsx + tailwind-merge) so overrides never lose to base classes.
+Button (primary, secondary, ghost, success, danger; sizes sm/md; supports `aria-pressed`), Card (outline / raised), Field (label, hint, error wiring) with Textarea, Badge (neutral/primary/success/warning/danger; pill "chip" shape for skills), Alert (danger/warning/info/success, role alert or status), Tabs (Radix, supports forceMount + hidden inactive panels), ScoreRing, Stat, Skeleton, ThemeToggle, CopyButton (rebuilt on Button), ConfirmDialog (Radix AlertDialog; danger/primary tone; replaces all browser dialogs, enforced by `no-alert`). Class merging through a `cn()` helper (clsx + tailwind-merge) so overrides never lose to base classes.
 
 ## Screens
 

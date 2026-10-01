@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
+    "@radix-ui/react-alert-dialog": "^1.1.23",
     "@radix-ui/react-tabs": "^1.1.21",
     "@react-pdf/renderer": "^4.9.0",
     "@upstash/ratelimit": "^2.2.0",
