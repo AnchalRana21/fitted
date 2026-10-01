@@ -58,7 +58,7 @@ export function ConfirmDialog({
   return (
     <AlertDialog.Root open={open} onOpenChange={handleOpenChange}>
       <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-[2px] data-[state=open]:animate-overlay-in" />
+        <AlertDialog.Overlay className="fixed inset-0 z-50 bg-[rgb(var(--shadow-color)/0.45)] backdrop-blur-[2px] data-[state=open]:animate-overlay-in" />
         <AlertDialog.Content
           onOpenAutoFocus={() => {
             returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;

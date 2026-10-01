@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
@@ -14,6 +14,16 @@ export function HistoryList() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [deleteFailed, setDeleteFailed] = useState(false);
   const [pending, setPending] = useState<Run | null>(null);
+  // After deleting the last run the row (and its Delete button) is gone; move focus to the empty state.
+  const deletedLast = useRef(false);
+  const startLink = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    if (runs?.length === 0 && deletedLast.current) {
+      deletedLast.current = false;
+      startLink.current?.focus();
+    }
+  }, [runs]);
 
   useEffect(() => {
     let live = true;
@@ -38,6 +48,7 @@ export function HistoryList() {
       setDeleteFailed(true);
       return;
     }
+    if (runs?.length === 1) deletedLast.current = true;
     setRuns((prev) => prev?.filter((r) => r.id !== run.id) ?? null);
   }
 
@@ -59,7 +70,7 @@ export function HistoryList() {
     return (
       <Card className="flex flex-col items-center gap-3 p-10 text-center">
         <p className="text-ink-2">No tailored resumes yet.</p>
-        <Link href="/" className={buttonClasses("primary", "sm")}>
+        <Link ref={startLink} href="/" className={buttonClasses("primary", "sm")}>
           Start one
         </Link>
       </Card>

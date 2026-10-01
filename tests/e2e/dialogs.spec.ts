@@ -46,6 +46,16 @@ test("history delete: Escape closes without deleting", async ({ page }) => {
   await expect(page.getByRole("link", { name: /^Sample:/ })).toBeVisible();
 });
 
+test("history delete: removing the only run focuses the empty state's Start one link", async ({ page }) => {
+  forbidNativeDialogs(page);
+  await openHistoryWithSample(page);
+  await expect(page.getByRole("link", { name: /^Sample:/ })).toHaveCount(1);
+  await page.getByRole("button", { name: /^Delete Sample/ }).click();
+  await page.getByRole("alertdialog", { name: "Delete this run?" }).getByRole("button", { name: "Delete run" }).click();
+  await expect(page.getByText("No tailored resumes yet")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start one" })).toBeFocused();
+});
+
 test("cover letter: replacing asks first; Cancel keeps edits, confirm rewrites", async ({ page }) => {
   forbidNativeDialogs(page);
   await page.goto("/");
