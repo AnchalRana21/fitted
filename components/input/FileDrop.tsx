@@ -2,6 +2,7 @@
 
 import { useState, type DragEvent } from "react";
 import { ACCEPTED_FILES, detectKind } from "@/lib/parse/kind";
+import { cn } from "@/lib/cn";
 import { LIMITS } from "@/lib/schemas";
 
 type State = { status: "idle" | "reading" | "done" | "error"; message?: string; name?: string };
@@ -51,9 +52,10 @@ export function FileDrop({ onText }: { onText: (text: string) => void }) {
       }}
       onDragLeave={() => setDragging(false)}
       onDrop={onDrop}
-      className={`rounded-lg border-2 border-dashed p-6 text-center text-sm ${
-        dragging ? "border-emerald-700 bg-emerald-50" : "border-neutral-400 bg-white"
-      } has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-emerald-700`}
+      className={cn(
+        "rounded-md border-2 border-dashed px-4 py-6 text-center text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary",
+        dragging ? "border-primary bg-primary-subtle" : "border-input bg-surface-muted",
+      )}
     >
       <input
         id="resume-file"
@@ -66,10 +68,43 @@ export function FileDrop({ onText }: { onText: (text: string) => void }) {
           e.target.value = "";
         }}
       />
-      <label htmlFor="resume-file" className="cursor-pointer text-neutral-700">
-        Drop a PDF or DOCX here, or <span className="font-medium text-emerald-800 underline">browse</span>
+      <label htmlFor="resume-file" className="block cursor-pointer text-ink-2">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="mx-auto mb-2 size-6 text-ink-3"
+        >
+          <path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5" />
+          <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+        </svg>
+        Drop a PDF or DOCX here, or{" "}
+        <span className="font-semibold text-primary-text underline underline-offset-2">browse</span>
+        <span className="mt-1 block text-xs text-ink-3">Up to 4 MB</span>
       </label>
-      <p role="status" className={`mt-2 ${state.status === "error" ? "text-red-700" : "text-neutral-600"}`}>
+      <p
+        role="status"
+        className={cn(
+          "text-sm",
+          state.status !== "idle" && "mt-3",
+          state.status === "reading" && "text-ink-2",
+          state.status === "done" && "inline-flex items-center gap-1.5 font-medium text-secondary-text",
+          state.status === "error" && "text-danger",
+        )}
+      >
+        {state.status === "done" && (
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="size-4 shrink-0">
+            <path
+              fillRule="evenodd"
+              d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        )}
         {state.status === "reading" && `Reading ${state.name}…`}
         {state.status === "done" && `Loaded ${state.name}. Check the text below.`}
         {state.status === "error" && state.message}
