@@ -16,9 +16,14 @@ describe("extractFileText", () => {
     await expect(extractFileText(new File(["x"], "cv.txt"))).rejects.toMatchObject({ code: "unsupported_type" });
   });
 
-  it("rejects files over 5 MB", async () => {
+  it("rejects files over 4 MB", async () => {
     const big = new File([new Uint8Array(5 * 1024 * 1024 + 1)], "cv.pdf", { type: "application/pdf" });
     await expect(extractFileText(big)).rejects.toBeInstanceOf(ParseError);
     await expect(extractFileText(big)).rejects.toMatchObject({ code: "too_large" });
+  });
+
+  it("rejects files whose bytes don't match the extension", async () => {
+    await expect(extractFileText(new File(["hello"], "cv.pdf"))).rejects.toMatchObject({ code: "unsupported_type" });
+    await expect(extractFileText(new File(["hello"], "cv.docx"))).rejects.toMatchObject({ code: "unsupported_type" });
   });
 });

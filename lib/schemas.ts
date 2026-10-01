@@ -3,8 +3,9 @@ import { z } from "zod";
 export const LIMITS = {
   jobChars: 15_000,
   resumeChars: 30_000,
-  fileBytes: 5 * 1024 * 1024,
+  fileBytes: 4 * 1024 * 1024,
   minJobChars: 50,
+  minParsedChars: 50,
   minResumeChars: 100,
 } as const;
 

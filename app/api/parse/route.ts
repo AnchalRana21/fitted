@@ -1,8 +1,13 @@
 import { extractFileText, ParseError } from "@/lib/parse/file";
+import { LIMITS } from "@/lib/schemas";
 
 export const runtime = "nodejs";
+export const maxDuration = 10;
 
 export async function POST(req: Request) {
+  if (Number(req.headers.get("content-length")) > LIMITS.fileBytes + 64 * 1024) {
+    return Response.json({ code: "too_large", message: "File is larger than 4 MB." }, { status: 413 });
+  }
   const form = await req.formData().catch(() => null);
   const file = form?.get("file");
   if (!(file instanceof File)) {
