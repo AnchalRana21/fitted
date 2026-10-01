@@ -65,4 +65,19 @@ describe("guardAiRequest limits", () => {
     if (!result.ok) expect(result.response.status).toBe(400);
     expect(check).not.toHaveBeenCalled();
   });
+
+  it("returns 413 when content-length is over the limit", async () => {
+    vi.stubEnv("MOCK_AI", "1");
+    const req = new Request("http://localhost/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "content-length": "200000" },
+      body: JSON.stringify(body),
+    });
+    const result = await guardAiRequest(req, AnalyzeRequestSchema);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.response.status).toBe(413);
+      expect(await result.response.json()).toMatchObject({ code: "bad_request" });
+    }
+  });
 });

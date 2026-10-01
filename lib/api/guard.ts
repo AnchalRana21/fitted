@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import { isMockMode } from "@/lib/ai/mock";
+import { LIMITS } from "@/lib/schemas";
 import { ERROR_MESSAGES, type ErrorCode } from "@/lib/errors";
 import { checkRateLimit, clientKey } from "@/lib/ratelimit";
 
@@ -14,6 +15,10 @@ export async function guardAiRequest<T>(req: Request, schema: z.ZodType<T>): Pro
   const mock = isMockMode();
   if (!mock && !process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
     return { ok: false, response: errorResponse("no_api_key", 503) };
+  }
+
+  if (Number(req.headers.get("content-length")) > LIMITS.requestBytes) {
+    return { ok: false, response: errorResponse("bad_request", 413) };
   }
 
   const parsed = schema.safeParse(await req.json().catch(() => undefined));
