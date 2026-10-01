@@ -5,6 +5,7 @@ import { extendTailwindMerge } from "tailwind-merge";
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
+      animate: ["flash"],
       color: [
         "canvas", "surface", "surface-muted", "band", "ink", "ink-2", "ink-3", "border", "border-strong", "input",
         "primary", "primary-hover", "on-primary", "primary-subtle", "primary-text",

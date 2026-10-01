@@ -14,4 +14,7 @@ describe("resolveTheme", () => {
     expect(THEME_SCRIPT).toContain("data-theme");
     expect(THEME_SCRIPT).toContain("fitted-theme");
   });
+  it("still consults the system preference when storage is blocked", () => {
+    expect(THEME_SCRIPT).toContain("prefers-color-scheme");
+  });
 });
