@@ -54,10 +54,11 @@ export async function checkRateLimit(key: string): Promise<RateLimitResult> {
   const active = getLimiters();
   if (!active) return { ok: true };
   try {
-    const perClient = await active.perClient.limit(key);
-    if (!perClient.success) return { ok: false, reason: "limited", reset: perClient.reset };
+    // Global first so a visitor blocked by the global cap does not burn a personal call.
     const global = await active.global.limit(GLOBAL_KEY);
     if (!global.success) return { ok: false, reason: "limited", reset: global.reset };
+    const perClient = await active.perClient.limit(key);
+    if (!perClient.success) return { ok: false, reason: "limited", reset: perClient.reset };
     return { ok: true };
   } catch (error) {
     console.error("Rate limiter unavailable", error);
