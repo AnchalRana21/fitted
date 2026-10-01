@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { CopyButton } from "@/components/ui/CopyButton";
@@ -21,14 +21,20 @@ type Props = { resume: Resume; job: string; saved: Saved; onSave: (coverLetter: 
 export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
   const [tone, setTone] = useState<Tone>(saved?.tone ?? "formal");
   const [text, setText] = useState(saved?.text ?? "");
+  const toneAtStart = useRef<Tone>(tone);
   const stream = useStream("/api/cover-letter", TextSchema, (data) => {
     setText(data);
-    onSave({ tone, text: data });
+    onSave({ tone: toneAtStart.current, text: data });
   });
 
   const generating = stream.status === "streaming";
-  const shown = generating ? stream.text : text;
-  const generate = () => void stream.start({ resume, job, tone });
+  const showStream = generating || (stream.status === "error" && stream.text !== "");
+  const shown = showStream ? stream.text : text;
+  const generate = () => {
+    if (text && !window.confirm("Replace your current cover letter?")) return;
+    toneAtStart.current = tone;
+    void stream.start({ resume, job, tone });
+  };
 
   return (
     <div className="space-y-4">
@@ -41,6 +47,7 @@ export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
               name="tone"
               value={t.value}
               checked={tone === t.value}
+              disabled={generating}
               onChange={() => setTone(t.value)}
               className="accent-emerald-700"
             />
@@ -55,6 +62,9 @@ export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
         <CopyButton text={shown} label="Copy text" />
       </div>
       {stream.error && <ErrorNotice error={stream.error} onRetry={generate} />}
+      <p role="status" className="sr-only">
+        {generating ? "Writing your cover letter…" : stream.status === "done" ? "Cover letter ready" : ""}
+      </p>
       <label htmlFor="cover-letter" className="sr-only">
         Cover letter
       </label>
@@ -62,10 +72,16 @@ export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
         id="cover-letter"
         value={shown}
         readOnly={generating}
-        onChange={(e) => setText(e.target.value)}
-        onBlur={() => text && onSave({ tone, text })}
+        aria-busy={generating}
+        onChange={(e) => {
+          if (stream.status === "error") stream.reset();
+          setText(e.target.value);
+        }}
+        onBlur={() => {
+          if (text !== (saved?.text ?? "")) onSave(text ? { tone, text } : undefined);
+        }}
         placeholder="Pick a tone and press Write cover letter."
-        className="h-96 w-full rounded-lg border border-neutral-300 bg-white p-4 text-sm leading-relaxed"
+        className="h-96 w-full rounded-lg border border-neutral-400 bg-white p-4 text-sm leading-relaxed placeholder:text-neutral-500"
       />
     </div>
   );
