@@ -84,3 +84,65 @@ describe("isHeading", () => {
     expect(isHeading("Work  Experience")).toBe(true);
   });
 });
+
+describe("parseSections rejoins wrapped lines", () => {
+  const bullets = (input: string, section = 1) =>
+    parseSections(input).sections[section].bullets.map((b) => b.text);
+
+  it("joins a lowercase continuation and keeps a new sentence separate", () => {
+    const resume = parseSections(
+      "Alex Morgan\nSUMMARY\nFrontend developer building React apps. Own features\nend to end with tests.\nDegree in computer science.",
+    );
+    expect(resume.sections[1].bullets).toEqual([
+      { id: "s1-b0", text: "Frontend developer building React apps. Own features end to end with tests." },
+      { id: "s1-b1", text: "Degree in computer science." },
+    ]);
+  });
+
+  it("joins a wrapped bullet", () => {
+    expect(bullets("Alex Morgan\nEXPERIENCE\n• Built dashboards used by teams across the\ncompany every day.\n• Wrote tests.")).toEqual([
+      "Built dashboards used by teams across the company every day.",
+      "Wrote tests.",
+    ]);
+  });
+
+  it("joins after a trailing comma or a short function word", () => {
+    expect(bullets("Alex Morgan\nSKILLS\nFrontend: React, Next.js,\nTypeScript\nTesting: Jest")).toEqual([
+      "Frontend: React, Next.js, TypeScript",
+      "Testing: Jest",
+    ]);
+    expect(bullets("Alex Morgan\nPROJECTS\nWeather app built with\nNext.js and a public API.")).toEqual([
+      "Weather app built with Next.js and a public API.",
+    ]);
+  });
+
+  it("keeps a hyphen when a word was split", () => {
+    expect(bullets("Alex Morgan\nEXPERIENCE\n• Handle work across a multi-\ncontributor repository.")).toEqual([
+      "Handle work across a multi-contributor repository.",
+    ]);
+  });
+
+  it("keeps separate lines separate", () => {
+    expect(bullets("Alex Morgan\nEDUCATION\nMaster of X, 2021–2023 — Uni, City, India\nCoursework: A, B")).toEqual([
+      "Master of X, 2021–2023 — Uni, City, India",
+      "Coursework: A, B",
+    ]);
+    expect(bullets("Alex Morgan\nEXPERIENCE\nEngineer, Acme (2021 – 2023) and\n• Built things.")).toEqual([
+      "Engineer, Acme (2021 – 2023) and",
+      "Built things.",
+    ]);
+    expect(bullets("Alex Morgan\nEXPERIENCE\nEngineer, Acme (2021 – 2023)\nbuilding things")).toEqual([
+      "Engineer, Acme (2021 – 2023)",
+      "building things",
+    ]);
+  });
+
+  it("never joins header lines", () => {
+    expect(bullets("Alex Morgan,\nalex@example.com\nSUMMARY\nHi.", 0)).toEqual(["Alex Morgan,", "alex@example.com"]);
+  });
+
+  it("keeps ids sequential after joining", () => {
+    const resume = parseSections("Alex Morgan\nSKILLS\nReact,\nNext.js\nJest\nGit");
+    expect(resume.sections[1].bullets.map((b) => b.id)).toEqual(["s1-b0", "s1-b1", "s1-b2"]);
+  });
+});

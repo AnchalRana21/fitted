@@ -1,3 +1,4 @@
+import { isRoleLine } from "@/lib/resume";
 import type { Resume } from "@/lib/schemas";
 
 const HEADINGS = new Set([
@@ -41,7 +42,22 @@ function toTitle(line: string): string {
   return clean.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Split resume text into sections. One non-empty line becomes one bullet. */
+const JOIN_WORDS = new Set(["and", "or", "of", "to", "the", "a", "an", "with", "for", "in", "on", "by", "from", "as", "at", "into", "than"]);
+
+/** Whether `line` (which had no bullet marker) continues `prev`, wrapped by PDF text extraction. */
+function continues(prev: string, line: string): boolean {
+  if (isRoleLine(prev)) return false;
+  if (/^\p{Ll}/u.test(line)) return true;
+  if (/[,;\-—(/]$/.test(prev)) return true;
+  const lastWord = prev.split(/\s+/).at(-1)?.toLowerCase() ?? "";
+  return JOIN_WORDS.has(lastWord);
+}
+
+function join(prev: string, line: string): string {
+  return /\p{L}-$/u.test(prev) ? `${prev}${line}` : `${prev} ${line}`;
+}
+
+/** Split resume text into sections. One non-empty line becomes one bullet, unless it continues a wrapped line. */
 export function parseSections(text: string): Resume {
   const lines = text
     .split(/\r?\n/)
@@ -58,8 +74,16 @@ export function parseSections(text: string): Resume {
       continue;
     }
     if (raw.length === 0) raw.push({ title: "Header", lines: [] });
+    const section = raw[raw.length - 1];
+    const marked = BULLET_MARK.test(line);
     const content = line.replace(BULLET_MARK, "").trim();
-    if (content) raw[raw.length - 1].lines.push(content);
+    if (!content) continue;
+    const prev = section.lines.at(-1);
+    if (!marked && section.title !== "Header" && prev !== undefined && continues(prev, content)) {
+      section.lines[section.lines.length - 1] = join(prev, content);
+    } else {
+      section.lines.push(content);
+    }
   }
 
   if (!sawHeading && raw.length === 1) raw[0].title = "Resume";
