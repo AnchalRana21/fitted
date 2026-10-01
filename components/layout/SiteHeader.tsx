@@ -14,8 +14,8 @@ export function SiteHeader() {
         </Link>
         <div className="flex items-center gap-1">
           <Link href="/history" className={linkClass}>History</Link>
-          <Link href="/design-system" className={linkClass}>Design system</Link>
-          <a href="https://github.com/AnchalRana21/fitted" rel="noopener noreferrer" className={linkClass}>GitHub</a>
+          <Link href="/design-system" className={`${linkClass} hidden sm:inline-flex`}>Design system</Link>
+          <a href="https://github.com/AnchalRana21/fitted" rel="noopener noreferrer" className={`${linkClass} hidden sm:inline-flex`}>GitHub</a>
           <ThemeToggle />
         </div>
       </nav>
