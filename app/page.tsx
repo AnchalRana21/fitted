@@ -2,6 +2,7 @@ import { InputForm } from "@/components/input/InputForm";
 
 export default function Home() {
   return (
+    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
     <div className="space-y-8">
       <div className="max-w-2xl">
         <h1 className="text-3xl font-semibold tracking-tight">Tailor your resume to the job in front of you</h1>
@@ -12,5 +13,6 @@ export default function Home() {
       </div>
       <InputForm />
     </div>
+    </main>
   );
 }

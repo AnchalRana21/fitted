@@ -1,15 +1,107 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
   color-scheme: light;
+  --c-canvas: #f7f8fa;
+  --c-surface: #ffffff;
+  --c-surface-muted: #f2f4f7;
+  --c-band: #e8f1fc;
+  --c-ink: #0d1b2a;
+  --c-ink-2: #475467;
+  --c-ink-3: #5d6b7e;
+  --c-border: #e4e7ec;
+  --c-border-strong: #d0d5dd;
+  --c-input: #7d8799;
+  --c-primary: #0b63ce;
+  --c-primary-hover: #0a56b3;
+  --c-on-primary: #ffffff;
+  --c-primary-subtle: #e8f1fc;
+  --c-primary-text: #0a56b3;
+  --c-secondary: #0d7a70;
+  --c-on-secondary: #ffffff;
+  --c-secondary-subtle: #d9f3ef;
+  --c-secondary-text: #08594f;
+  --c-danger: #b42318;
+  --c-danger-subtle: #fef3f2;
+  --c-warning-text: #8a4b00;
+  --c-warning-subtle: #fff4e0;
+  --shadow-color: 16 24 40;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --c-canvas: #0b1220;
+  --c-surface: #0f1829;
+  --c-surface-muted: #141f33;
+  --c-band: #0f2340;
+  --c-ink: #e6ebf2;
+  --c-ink-2: #a3b0c2;
+  --c-ink-3: #8b99ad;
+  --c-border: #1f2b40;
+  --c-border-strong: #2b3a55;
+  --c-input: #62738f;
+  --c-primary: #4c9aff;
+  --c-primary-hover: #6aabff;
+  --c-on-primary: #0b1220;
+  --c-primary-subtle: #13294a;
+  --c-primary-text: #8cc2ff;
+  --c-secondary: #2cc3b0;
+  --c-on-secondary: #0b1220;
+  --c-secondary-subtle: #0f2f30;
+  --c-secondary-text: #8ce8db;
+  --c-danger: #ff8a80;
+  --c-danger-subtle: #3a1414;
+  --c-warning-text: #ffc97a;
+  --c-warning-subtle: #33270f;
+  --shadow-color: 0 0 0;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-surface-muted: var(--c-surface-muted);
+  --color-band: var(--c-band);
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-ink-3: var(--c-ink-3);
+  --color-border: var(--c-border);
+  --color-border-strong: var(--c-border-strong);
+  --color-input: var(--c-input);
+  --color-primary: var(--c-primary);
+  --color-primary-hover: var(--c-primary-hover);
+  --color-on-primary: var(--c-on-primary);
+  --color-primary-subtle: var(--c-primary-subtle);
+  --color-primary-text: var(--c-primary-text);
+  --color-secondary: var(--c-secondary);
+  --color-on-secondary: var(--c-on-secondary);
+  --color-secondary-subtle: var(--c-secondary-subtle);
+  --color-secondary-text: var(--c-secondary-text);
+  --color-danger: var(--c-danger);
+  --color-danger-subtle: var(--c-danger-subtle);
+  --color-warning-text: var(--c-warning-text);
+  --color-warning-subtle: var(--c-warning-subtle);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.06), 0 1px 3px rgb(var(--shadow-color) / 0.08);
+  --shadow-md: 0 6px 20px rgb(var(--shadow-color) / 0.10), 0 2px 6px rgb(var(--shadow-color) / 0.05);
+  --shadow-lg: 0 14px 36px rgb(var(--shadow-color) / 0.14), 0 4px 10px rgb(var(--shadow-color) / 0.06);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-flash: flash 1.2s var(--ease-out);
+  @keyframes flash {
+    0% { background-color: var(--c-secondary-subtle); }
+    100% { background-color: transparent; }
+  }
 }
 
 body {
-  background: #fafafa;
-  color: #171717;
+  background: var(--c-canvas);
+  color: var(--c-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

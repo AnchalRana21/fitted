@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
+import { Inter } from "next/font/google";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "Fitted: tailor your resume to any job",
@@ -13,24 +13,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        <header className="border-b border-neutral-200 bg-white">
-          <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-            <Link href="/" className="text-lg font-semibold tracking-tight">
-              Fitted
-            </Link>
-            <div className="flex gap-4 text-sm text-neutral-700">
-              <Link href="/history" className="py-2 hover:text-neutral-950">
-                History
-              </Link>
-              <a href="https://github.com/AnchalRana21/fitted" rel="noopener noreferrer" className="py-2 hover:text-neutral-950">
-                GitHub
-              </a>
-            </div>
-          </nav>
-        </header>
-        <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
+    <html lang="en" data-theme="light" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
+      <body className={`${inter.variable} min-h-screen font-sans antialiased`}>
+        <SiteHeader />
+        {children}
       </body>
     </html>
   );
