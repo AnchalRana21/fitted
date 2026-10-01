@@ -1,19 +1,29 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { errorEvent, type StreamEvent } from "@/lib/stream/ndjson";
 import { fallbackParams, getClient, MODEL } from "./client";
 import { apiErrorEvent, type Effort } from "./structured";
 
-type Options = { system: string; user: string; effort: Effort; maxTokens?: number };
+type Options = {
+  system: string;
+  user: string;
+  effort: Effort;
+  maxTokens?: number;
+  signal?: AbortSignal;
+};
 
 /** Stream plain text as deltas. The final `done` event carries the full text. */
 export async function* streamText(opts: Options): AsyncGenerator<StreamEvent> {
-  const stream = getClient().beta.messages.stream({
-    model: MODEL,
-    max_tokens: opts.maxTokens ?? 8000,
-    ...fallbackParams(),
-    output_config: { effort: opts.effort },
-    system: opts.system,
-    messages: [{ role: "user", content: opts.user }],
-  });
+  const stream = getClient().beta.messages.stream(
+    {
+      model: MODEL,
+      max_tokens: opts.maxTokens ?? 8000,
+      ...fallbackParams(),
+      output_config: { effort: opts.effort },
+      system: opts.system,
+      messages: [{ role: "user", content: opts.user }],
+    },
+    { signal: opts.signal },
+  );
 
   let finished = false;
   try {
@@ -28,10 +38,18 @@ export async function* streamText(opts: Options): AsyncGenerator<StreamEvent> {
       yield errorEvent("refusal");
       return;
     }
+    if (message.stop_reason === "max_tokens") {
+      yield errorEvent("truncated");
+      return;
+    }
     // After a fallback, only the last text block is the answer.
-    yield { type: "done", data: message.content.filter((b) => b.type === "text").at(-1)?.text ?? "" };
+    yield {
+      type: "done",
+      data: message.content.filter((b) => b.type === "text").at(-1)?.text ?? "",
+    };
   } catch (error) {
     finished = true;
+    if (error instanceof Anthropic.APIUserAbortError) return;
     yield apiErrorEvent(error);
   } finally {
     if (!finished) stream.abort();

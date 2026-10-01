@@ -14,12 +14,17 @@ type Options<T> = {
   effort: Effort;
   maxTokens?: number;
   transform?: (data: T) => T;
+  signal?: AbortSignal;
 };
 
 const PARTIAL_INTERVAL_MS = 100;
 
 export function apiErrorEvent(error: unknown): StreamEvent {
-  if (error instanceof Anthropic.RateLimitError || (error instanceof Anthropic.APIError && error.status === 529)) {
+  if (
+    error instanceof Anthropic.RateLimitError ||
+    (error instanceof Anthropic.APIError &&
+      (error.status === 529 || error.type === "overloaded_error" || error.type === "rate_limit_error"))
+  ) {
     return errorEvent("upstream_busy");
   }
   console.error(error);
@@ -35,14 +40,20 @@ function parseJson(text: string): unknown {
 }
 
 async function* attempt<T>(opts: Options<T>): AsyncGenerator<StreamEvent, "ok" | "failed" | "invalid"> {
-  const stream = getClient().beta.messages.stream({
-    model: MODEL,
-    max_tokens: opts.maxTokens ?? 32000,
-    ...fallbackParams(),
-    output_config: { effort: opts.effort, format: { type: "json_schema", schema: toApiSchema(opts.schema) } },
-    system: opts.system,
-    messages: [{ role: "user", content: opts.user }],
-  });
+  const stream = getClient().beta.messages.stream(
+    {
+      model: MODEL,
+      max_tokens: opts.maxTokens ?? 32000,
+      ...fallbackParams(),
+      output_config: {
+        effort: opts.effort,
+        format: { type: "json_schema", schema: toApiSchema(opts.schema) },
+      },
+      system: opts.system,
+      messages: [{ role: "user", content: opts.user }],
+    },
+    { signal: opts.signal },
+  );
 
   let text = "";
   let lastEmit = 0;
@@ -76,10 +87,14 @@ async function* attempt<T>(opts: Options<T>): AsyncGenerator<StreamEvent, "ok" |
     const final = message.content.filter((b) => b.type === "text").at(-1)?.text ?? "";
     const parsed = opts.schema.safeParse(parseJson(final));
     if (!parsed.success) return "invalid";
-    yield { type: "done", data: opts.transform ? opts.transform(parsed.data) : parsed.data };
+    yield {
+      type: "done",
+      data: opts.transform ? opts.transform(parsed.data) : parsed.data,
+    };
     return "ok";
   } catch (error) {
     finished = true;
+    if (error instanceof Anthropic.APIUserAbortError) return "failed";
     yield apiErrorEvent(error);
     return "failed";
   } finally {

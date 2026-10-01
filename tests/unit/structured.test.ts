@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import type { StreamEvent } from "@/lib/stream/ndjson";
 
@@ -81,5 +82,159 @@ describe("streamText", () => {
       { type: "delta", text: "team" },
       { type: "done", data: "Dear team" },
     ]);
+  });
+});
+
+function throwingStream(error: unknown) {
+  return {
+    async *[Symbol.asyncIterator]() {
+      throw error;
+    },
+    finalMessage: async () => {
+      throw error;
+    },
+    abort: vi.fn(),
+  };
+}
+
+describe("abort and error handling", () => {
+  beforeEach(() => streamMock.mockReset());
+
+  it("passes the abort signal to the SDK (structured)", async () => {
+    const signal = new AbortController().signal;
+    streamMock.mockReturnValueOnce(fakeStream(['{"score": 1}']));
+    await collect(streamStructured({ ...opts, signal }));
+    expect(streamMock.mock.calls[0][1]).toEqual({ signal });
+  });
+
+  it("passes the abort signal to the SDK (text)", async () => {
+    const signal = new AbortController().signal;
+    streamMock.mockReturnValueOnce(fakeStream(["hi"]));
+    await collect(streamText({ system: "s", user: "u", effort: "low", signal }));
+    expect(streamMock.mock.calls[0][1]).toEqual({ signal });
+  });
+
+  it("emits nothing when the request is aborted (structured)", async () => {
+    streamMock.mockReturnValueOnce(throwingStream(new Anthropic.APIUserAbortError()));
+    expect(await collect(streamStructured(opts))).toEqual([]);
+    expect(streamMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("emits nothing when the request is aborted (text)", async () => {
+    streamMock.mockReturnValueOnce(throwingStream(new Anthropic.APIUserAbortError()));
+    expect(await collect(streamText({ system: "s", user: "u", effort: "low" }))).toEqual([]);
+  });
+
+  it("maps rate limit errors to upstream_busy", async () => {
+    const error = new Anthropic.RateLimitError(429, undefined, "slow down", new Headers());
+    streamMock.mockReturnValueOnce(throwingStream(error));
+    expect((await collect(streamStructured(opts))).at(-1)).toMatchObject({
+      type: "error",
+      code: "upstream_busy",
+    });
+  });
+
+  it("maps mid-stream overloaded errors (no status) to upstream_busy", async () => {
+    const error = new Anthropic.APIError(undefined, undefined, "overloaded", undefined, "overloaded_error");
+    streamMock.mockReturnValueOnce(throwingStream(error));
+    expect((await collect(streamStructured(opts))).at(-1)).toMatchObject({
+      type: "error",
+      code: "upstream_busy",
+    });
+  });
+
+  it("maps mid-stream rate_limit_error (no status) to upstream_busy", async () => {
+    const error = new Anthropic.APIError(undefined, undefined, "limit", undefined, "rate_limit_error");
+    streamMock.mockReturnValueOnce(throwingStream(error));
+    expect((await collect(streamText({ system: "s", user: "u", effort: "low" }))).at(-1)).toMatchObject({
+      type: "error",
+      code: "upstream_busy",
+    });
+  });
+
+  it("maps unknown errors to upstream_error", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    streamMock.mockReturnValueOnce(throwingStream(new Error("boom")));
+    expect((await collect(streamStructured(opts))).at(-1)).toMatchObject({
+      type: "error",
+      code: "upstream_error",
+    });
+    spy.mockRestore();
+  });
+
+  it("aborts the upstream stream when the consumer stops early", async () => {
+    const stream = fakeStream(['{"sco', 're": 1}']);
+    streamMock.mockReturnValueOnce(stream);
+    const gen = streamText({ system: "s", user: "u", effort: "low" });
+    await gen.next();
+    await gen.return(undefined);
+    expect(stream.abort).toHaveBeenCalled();
+  });
+
+  it("aborts the upstream stream when the structured consumer stops early", async () => {
+    const stream = fakeStream(['{"score": 1}']);
+    streamMock.mockReturnValueOnce(stream);
+    const gen = streamStructured(opts);
+    await gen.next();
+    await gen.return(undefined);
+    expect(stream.abort).toHaveBeenCalled();
+  });
+
+  it("resets accumulated text on a second text block", async () => {
+    const stream = {
+      async *[Symbol.asyncIterator]() {
+        yield {
+          type: "content_block_start",
+          index: 0,
+          content_block: { type: "text", text: "" },
+        };
+        yield {
+          type: "content_block_delta",
+          index: 0,
+          delta: { type: "text_delta", text: '{"score": 1' },
+        };
+        yield {
+          type: "content_block_start",
+          index: 1,
+          content_block: { type: "text", text: "" },
+        };
+        yield {
+          type: "content_block_delta",
+          index: 1,
+          delta: { type: "text_delta", text: '{"score": 2}' },
+        };
+      },
+      finalMessage: async () => ({
+        stop_reason: "end_turn",
+        content: [
+          { type: "text", text: '{"score": 1' },
+          { type: "text", text: '{"score": 2}' },
+        ],
+      }),
+      abort: vi.fn(),
+    };
+    streamMock.mockReturnValueOnce(stream);
+    const events = await collect(streamStructured(opts));
+    expect(events.at(-1)).toEqual({ type: "done", data: { score: 2 } });
+  });
+
+  it("reports max_tokens as truncated without retrying", async () => {
+    streamMock.mockReturnValueOnce(fakeStream(['{"score": 1'], "max_tokens"));
+    const events = await collect(streamStructured(opts));
+    expect(streamMock).toHaveBeenCalledTimes(1);
+    expect(events.at(-1)).toMatchObject({ type: "error", code: "truncated" });
+  });
+
+  it("streamText reports max_tokens as truncated", async () => {
+    streamMock.mockReturnValueOnce(fakeStream(["partial"], "max_tokens"));
+    const events = await collect(streamText({ system: "s", user: "u", effort: "low" }));
+    expect(events.at(-1)).toMatchObject({ type: "error", code: "truncated" });
+    expect(events.some((e) => e.type === "done")).toBe(false);
+  });
+
+  it("streamText reports refusals", async () => {
+    streamMock.mockReturnValueOnce(fakeStream([""], "refusal"));
+    const events = await collect(streamText({ system: "s", user: "u", effort: "low" }));
+    expect(events.at(-1)).toMatchObject({ type: "error", code: "refusal" });
   });
 });
