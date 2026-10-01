@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { z } from "zod";
-import { describeError, type ErrorCode } from "@/lib/errors";
+import { describeError, ERROR_MESSAGES, type ErrorCode } from "@/lib/errors";
 import { decodeEvents } from "@/lib/stream/ndjson";
 
 export type StreamStatus = "idle" | "streaming" | "done" | "error";
@@ -29,9 +29,20 @@ export function useStream<T>(url: string, schema: z.ZodType<T>, onDone?: (data: 
   const controllerRef = useRef<AbortController | null>(null);
   const onDoneRef = useRef(onDone);
 
+  const mountedRef = useRef(false);
+
   useEffect(() => {
     onDoneRef.current = onDone;
   });
+
+  // We don't abort on unmount (StrictMode remounts), but we don't chain
+  // follow-up work (onDone) after a real unmount.
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const start = useCallback(
     async (body: unknown) => {
@@ -40,8 +51,12 @@ export function useStream<T>(url: string, schema: z.ZodType<T>, onDone?: (data: 
       controllerRef.current = controller;
       setState({ ...idle<T>(), status: "streaming" });
 
+      const update = (fn: (s: State<T>) => State<T>) => {
+        if (controllerRef.current === controller) setState(fn);
+      };
+
       const fail = (code: ErrorCode, message = describeError(code)) =>
-        setState((s) => ({ ...s, status: "error", error: { code, message } }));
+        update((s) => ({ ...s, status: "error", error: { code, message } }));
 
       try {
         const res = await fetch(url, {
@@ -52,23 +67,32 @@ export function useStream<T>(url: string, schema: z.ZodType<T>, onDone?: (data: 
         });
         if (!res.ok || !res.body) {
           const err = (await res.json().catch(() => null)) as { code?: ErrorCode; reset?: number } | null;
-          const code = err?.code ?? "upstream_error";
+          const code: ErrorCode =
+            err?.code && err.code in ERROR_MESSAGES
+              ? err.code
+              : res.status === 413
+                ? "bad_request"
+                : res.status === 429
+                  ? "rate_limited"
+                  : res.status >= 502
+                    ? "upstream_busy"
+                    : "upstream_error";
           return fail(code, describeError(code, err?.reset));
         }
         for await (const event of decodeEvents(res.body)) {
-          if (event.type === "partial") setState((s) => ({ ...s, partial: event.data }));
-          else if (event.type === "delta") setState((s) => ({ ...s, text: s.text + event.text }));
+          if (event.type === "partial") update((s) => ({ ...s, partial: event.data }));
+          else if (event.type === "delta") update((s) => ({ ...s, text: s.text + event.text }));
           else if (event.type === "error") return fail(event.code, event.message);
           else {
             const parsed = schema.safeParse(event.data);
             if (!parsed.success) return fail("invalid_output");
-            setState((s) => ({
+            update((s) => ({
               ...s,
               status: "done",
               data: parsed.data,
               text: typeof parsed.data === "string" ? parsed.data : s.text,
             }));
-            onDoneRef.current?.(parsed.data);
+            if (controllerRef.current === controller && mountedRef.current) onDoneRef.current?.(parsed.data);
             return;
           }
         }
@@ -82,6 +106,7 @@ export function useStream<T>(url: string, schema: z.ZodType<T>, onDone?: (data: 
 
   const reset = useCallback(() => {
     controllerRef.current?.abort();
+    controllerRef.current = null;
     setState(idle<T>());
   }, []);
 
