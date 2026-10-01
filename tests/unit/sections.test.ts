@@ -47,10 +47,35 @@ describe("parseSections", () => {
   });
 });
 
+describe("parseSections edge cases", () => {
+  const texts = (input: string) =>
+    parseSections(input).sections.flatMap((s) => s.bullets.map((b) => b.text));
+
+  it("only treats dash and star as bullet markers before whitespace", () => {
+    expect(texts("-5% latency")).toEqual(["-5% latency"]);
+    expect(texts("- Worked")).toEqual(["Worked"]);
+    expect(texts("•Built")).toEqual(["Built"]);
+  });
+
+  it("handles CRLF line endings", () => {
+    expect(texts("Line one\r\nLine two")).toEqual(["Line one", "Line two"]);
+  });
+
+  it("produces no bullet for a marker-only line", () => {
+    expect(texts("Name\n•\nReal line")).toEqual(["Name", "Real line"]);
+  });
+
+  it("treats a heading with trailing colon and spaces as a heading", () => {
+    const resume = parseSections("Name\nEXPERIENCE:  \nDid things");
+    expect(resume.sections.map((s) => s.title)).toEqual(["Header", "Experience"]);
+  });
+});
+
 describe("isHeading", () => {
   it("matches common headings in any case, with or without a colon", () => {
     expect(isHeading("WORK EXPERIENCE")).toBe(true);
     expect(isHeading("Technical Skills:")).toBe(true);
     expect(isHeading("Built a skills matrix")).toBe(false);
+    expect(isHeading("Work  Experience")).toBe(true);
   });
 });
