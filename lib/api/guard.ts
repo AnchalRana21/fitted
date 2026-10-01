@@ -4,7 +4,7 @@ import { ERROR_MESSAGES, type ErrorCode } from "@/lib/errors";
 import { checkRateLimit, clientKey } from "@/lib/ratelimit";
 
 export function errorResponse(code: ErrorCode, status: number, extra?: Record<string, unknown>): Response {
-  return Response.json({ code, message: ERROR_MESSAGES[code], ...extra }, { status });
+  return Response.json({ ...extra, code, message: ERROR_MESSAGES[code] }, { status });
 }
 
 type GuardResult<T> = { ok: true; body: T } | { ok: false; response: Response };
@@ -21,7 +21,15 @@ export async function guardAiRequest<T>(req: Request, schema: z.ZodType<T>): Pro
 
   if (!mock) {
     const limit = await checkRateLimit(clientKey(req.headers));
-    if (!limit.ok) return { ok: false, response: errorResponse("rate_limited", 429, { reset: limit.reset }) };
+    if (!limit.ok) {
+      return {
+        ok: false,
+        response:
+          limit.reason === "limited"
+            ? errorResponse("rate_limited", 429, { reset: limit.reset })
+            : errorResponse("upstream_busy", 503),
+      };
+    }
   }
   return { ok: true, body: parsed.data };
 }

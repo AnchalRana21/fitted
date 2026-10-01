@@ -23,6 +23,10 @@ describe("clientKey", () => {
     expect(clientKey(new Headers({ "x-forwarded-for": "1.2.3.4, 10.0.0.1" }))).toBe("ip:1.2.3.4");
     expect(clientKey(new Headers())).toBe("ip:anonymous");
   });
+
+  it("prefers x-real-ip over x-forwarded-for", () => {
+    expect(clientKey(new Headers({ "x-real-ip": "9.9.9.9", "x-forwarded-for": "1.2.3.4" }))).toBe("ip:9.9.9.9");
+  });
 });
 
 describe("checkRateLimit", () => {
