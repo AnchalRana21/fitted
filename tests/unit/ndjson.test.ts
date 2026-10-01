@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { decodeEvents, encodeEvent, toNdjsonResponse, type StreamEvent } from "@/lib/stream/ndjson";
+import { describe, expect, it, vi } from "vitest";
+import { decodeEvents, encodeEvent, errorEvent, toNdjsonResponse, type StreamEvent } from "@/lib/stream/ndjson";
 
 function streamOf(chunks: string[]): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
@@ -49,5 +49,56 @@ describe("ndjson", () => {
     }
     const out = await collect(toNdjsonResponse(events()).body!);
     expect(out.at(-1)).toMatchObject({ type: "error", code: "upstream_error" });
+  });
+  it("cancels the source when the consumer stops early", async () => {
+    const cancel = vi.fn();
+    const encoder = new TextEncoder();
+    const source = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode(encodeEvent({ type: "delta", text: "a" })));
+        controller.enqueue(encoder.encode(encodeEvent({ type: "delta", text: "b" })));
+      },
+      cancel,
+    });
+    for await (const event of decodeEvents(source)) {
+      expect(event.type).toBe("delta");
+      break;
+    }
+    expect(cancel).toHaveBeenCalled();
+  });
+
+  it("stops with an error event on a malformed line", async () => {
+    const chunks = [
+      encodeEvent({ type: "partial", data: 1 }) + "not json\n" + encodeEvent({ type: "done", data: 2 }),
+    ];
+    const events = await collect(streamOf(chunks));
+    expect(events).toEqual([{ type: "partial", data: 1 }, errorEvent("upstream_error")]);
+  });
+
+  it("cancels the generator when the client disconnects", async () => {
+    let cleaned = false;
+    async function* events(): AsyncGenerator<StreamEvent> {
+      try {
+        yield { type: "delta", text: "a" };
+        yield { type: "delta", text: "b" };
+      } finally {
+        cleaned = true;
+      }
+    }
+    const reader = toNdjsonResponse(events()).body!.getReader();
+    await reader.read();
+    await reader.cancel();
+    expect(cleaned).toBe(true);
+  });
+
+  it("decodes multi-byte characters split across chunks", async () => {
+    const bytes = new TextEncoder().encode(encodeEvent({ type: "delta", text: "é€😀" }));
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (const byte of bytes) controller.enqueue(new Uint8Array([byte]));
+        controller.close();
+      },
+    });
+    expect(await collect(body)).toEqual([{ type: "delta", text: "é€😀" }]);
   });
 });

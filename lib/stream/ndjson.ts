@@ -39,9 +39,18 @@ export function toNdjsonResponse(events: AsyncIterable<StreamEvent>): Response {
   });
 }
 
+function parseLine(line: string): StreamEvent | null {
+  try {
+    return JSON.parse(line) as StreamEvent;
+  } catch {
+    return null;
+  }
+}
+
 export async function* decodeEvents(body: ReadableStream<Uint8Array>): AsyncGenerator<StreamEvent> {
   const reader = body.pipeThrough(new TextDecoderStream() as ReadableWritablePair<string, Uint8Array>).getReader();
   let buffer = "";
+  let finished = false;
   try {
     while (true) {
       const { value, done } = await reader.read();
@@ -51,12 +60,24 @@ export async function* decodeEvents(body: ReadableStream<Uint8Array>): AsyncGene
       while (newline >= 0) {
         const line = buffer.slice(0, newline).trim();
         buffer = buffer.slice(newline + 1);
-        if (line) yield JSON.parse(line) as StreamEvent;
+        if (line) {
+          const event = parseLine(line);
+          if (!event) {
+            yield errorEvent("upstream_error");
+            return;
+          }
+          yield event;
+        }
         newline = buffer.indexOf("\n");
       }
     }
-    if (buffer.trim()) yield JSON.parse(buffer) as StreamEvent;
+    if (buffer.trim()) {
+      const event = parseLine(buffer);
+      yield event ?? errorEvent("upstream_error");
+    }
+    finished = true;
   } finally {
+    if (!finished) await reader.cancel().catch(() => {});
     reader.releaseLock();
   }
 }
