@@ -23,8 +23,9 @@ const styles = StyleSheet.create({
 });
 
 export function ResumePdf({ resume }: { resume: Resume }) {
+  const name = resume.sections.find((s) => s.title === "Header")?.bullets[0]?.text || "Resume";
   return (
-    <Document title="Resume">
+    <Document title={`${name} – Resume`} author={name}>
       <Page size="A4" style={styles.page}>
         {resume.sections.map((section) =>
           section.title === "Header" ? (
@@ -37,7 +38,7 @@ export function ResumePdf({ resume }: { resume: Resume }) {
             </View>
           ) : (
             <View key={section.id} style={styles.section}>
-              <Text style={styles.heading}>{section.title}</Text>
+              <Text style={styles.heading} minPresenceAhead={40}>{section.title}</Text>
               {section.bullets.map((b) =>
                 isRoleLine(b.text) ? (
                   <Text key={b.id} style={styles.role}>
