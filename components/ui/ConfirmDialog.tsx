@@ -33,6 +33,7 @@ export function ConfirmDialog({
   const [working, setWorking] = useState(false);
   // Opened programmatically (no Radix Trigger), so remember what had focus to restore it on close.
   const returnFocus = useRef<HTMLElement | null>(null);
+  const busyRef = useRef(false);
 
   const handleOpenChange = (next: boolean) => {
     if (working && !next) return; // don't dismiss mid-action
@@ -41,18 +42,24 @@ export function ConfirmDialog({
 
   const confirm = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault(); // Radix would close on click; we close once onConfirm settles.
-    const result = onConfirm();
-    if (result instanceof Promise) {
-      setWorking(true);
-      try {
+    if (busyRef.current) return; // ignore double activation
+    busyRef.current = true;
+    try {
+      const result = onConfirm();
+      if (result instanceof Promise) {
+        setWorking(true);
         await result;
-      } catch {
-        // Caller owns error reporting.
-      } finally {
-        setWorking(false);
       }
+    } catch {
+      // Sync throw or rejection: close anyway; the caller owns error reporting.
+    } finally {
+      setWorking(false);
     }
-    onOpenChange(false);
+    try {
+      onOpenChange(false);
+    } finally {
+      busyRef.current = false; // released only after the close is requested
+    }
   };
 
   return (
