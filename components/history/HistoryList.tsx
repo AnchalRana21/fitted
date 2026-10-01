@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
+import { Button, buttonClasses } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { deleteRun, listRuns, type Run } from "@/lib/runs";
 
 export function HistoryList() {
@@ -38,36 +41,55 @@ export function HistoryList() {
   }
 
   if (loadFailed) {
-    return <p role="alert">Couldn&apos;t read saved runs in this browser. Private browsing can block storage.</p>;
+    return (
+      <Alert tone="danger" role="alert">
+        Couldn&apos;t read saved runs in this browser. Private browsing can block storage.
+      </Alert>
+    );
   }
-  if (runs === null) return <p role="status">Loading…</p>;
+  if (runs === null) {
+    return (
+      <p role="status" className="text-sm text-ink-3">
+        Loading…
+      </p>
+    );
+  }
   if (runs.length === 0) {
     return (
-      <p className="text-neutral-700">
-        No tailored resumes yet. <Link href="/" className="underline">Start one</Link>.
-      </p>
+      <Card className="flex flex-col items-center gap-3 p-10 text-center">
+        <p className="text-ink-2">No tailored resumes yet.</p>
+        <Link href="/" className={buttonClasses("primary", "sm")}>
+          Start one
+        </Link>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-3">
-      {deleteFailed && <p role="alert">Couldn&apos;t delete this run.</p>}
-      <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+      {deleteFailed && (
+        <Alert tone="danger" role="alert">
+          Couldn&apos;t delete this run.
+        </Alert>
+      )}
+      <ul className="grid gap-3">
         {runs.map((run) => (
-          <li key={run.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-            <div>
-              <Link href={`/tailor/${run.id}`} className="font-medium hover:underline">
+          <Card as="li" key={run.id} className="flex items-center gap-4 p-4 transition-shadow hover:shadow-md">
+            <div className="min-w-0 flex-1">
+              <Link href={`/tailor/${run.id}`} className="block truncate font-semibold text-ink hover:text-primary-text">
                 {run.title}
               </Link>
-              <p className="text-sm text-neutral-600">
-                {new Date(run.createdAt).toLocaleString()}
-                {run.analysis && ` · Match ${run.analysis.score}/100`}
-              </p>
+              <p className="text-xs text-ink-3">{new Date(run.createdAt).toLocaleString()}</p>
             </div>
-            <Button variant="ghost" aria-label={`Delete ${run.title}`} onClick={() => remove(run)}>
+            {run.analysis ? (
+              <Badge tone="primary">Match {run.analysis.score}/100</Badge>
+            ) : (
+              <Badge>No score yet</Badge>
+            )}
+            <Button variant="ghost" size="sm" aria-label={`Delete ${run.title}`} onClick={() => remove(run)}>
               Delete
             </Button>
-          </li>
+          </Card>
         ))}
       </ul>
     </div>
