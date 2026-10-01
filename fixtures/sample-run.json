@@ -25,8 +25,8 @@
       },
       {
         "bulletId": "s2-b2",
-        "newText": "Built and maintained components in the shared design system, and fixed interface bugs across the product.",
-        "reason": "Matches \"contribute to our design system\" with a concrete role.",
+        "newText": "Contributed to the design system and fixed interface bugs.",
+        "reason": "Matches \"contribute to our design system\" using your own experience.",
         "verify": false
       },
       {
@@ -37,11 +37,11 @@
       },
       {
         "bulletId": "s3-b0",
-        "newText": "Built a weather app in Next.js and TypeScript that shows forecasts from a public API.",
+        "newText": "Built a weather app in Next.js that shows data from a public API.",
         "reason": "Names the stack the job lists.",
         "verify": false
       }
     ]
   },
-  "coverLetter": "Dear Brightline Health team,\n\nI'm applying for the Frontend Engineer role. For the past three years I have built React and Next.js apps in TypeScript at Acme Analytics, including dashboards used by 40 internal teams, so building the dashboards your clinicians rely on is close to the work I do every day.\n\nI also contribute to our shared design system and write tests for critical flows such as checkout. I'm keen to grow my end-to-end testing and accessibility skills, and your focus on both is a big part of why this role appeals to me.\n\nThank you for your time. I would be glad to walk you through my work.\n\nAlex Morgan"
+  "coverLetter": "Dear Brightline Health team,\n\nI'm applying for the Frontend Engineer role. For the past three years I have built React and Next.js apps in TypeScript at Acme Analytics, including dashboards used by 40 internal teams, so building the dashboards your clinicians rely on is close to the work I do every day.\n\nAt Acme I also contribute to the shared design system and write tests for critical flows such as checkout. I'm keen to grow my end-to-end testing and accessibility skills, and your focus on both is a big part of why this role appeals to me.\n\nThank you for your time. I would be glad to walk you through my work.\n\nAlex Morgan"
 }

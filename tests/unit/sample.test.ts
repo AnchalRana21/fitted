@@ -37,6 +37,8 @@ describe("mock mode", () => {
   it("streams partial analysis then the full fixture", async () => {
     const events = await collect(mockAnalysis());
     expect(events.some((e) => e.type === "partial")).toBe(true);
+    expect(events.slice(0, -1).every((e) => e.type === "partial")).toBe(true);
+    expect(events.filter((e) => e.type === "done")).toHaveLength(1);
     expect(events.at(-1)).toEqual({ type: "done", data: sample.analysis });
   });
 
