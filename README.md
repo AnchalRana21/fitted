@@ -6,6 +6,17 @@ Fitted compares your resume with a job, scores the match, suggests changes line 
 
 **Live demo:** _add the Vercel URL here after deploying_ · No sign-up. Press **Try sample** to see a full run without using any AI calls.
 
+<table>
+  <tr>
+    <td><img src="docs/screenshots/workspace-light.png" alt="Fitted workspace in the light theme, with suggestions on the left and a live resume preview on the right" /></td>
+    <td><img src="docs/screenshots/workspace-dark.png" alt="Fitted workspace in the dark theme" /></td>
+  </tr>
+  <tr>
+    <td align="center">Light</td>
+    <td align="center">Dark</td>
+  </tr>
+</table>
+
 <!-- Add docs/demo.gif: record the sample flow (about 20 seconds). -->
 
 ## Features
@@ -14,6 +25,8 @@ Fitted compares your resume with a job, scores the match, suggests changes line 
 - **Line-by-line rewrite** with a word-level diff. Accept, reject or edit each change, or accept all safe changes in a section.
 - **No made-up claims.** Suggestions that add a number, skill or name not found in your resume are marked "Check this" and are never accepted in bulk.
 - **Cover letter** in three tones, streamed and editable.
+- **Workspace with live resume preview.** Accepting a change updates the resume next to it straight away.
+- **Light and dark themes**, following your system setting or the toggle in the header.
 - **Export** to an ATS-friendly PDF or copy as Markdown.
 - **Private by default.** Runs are saved in your browser (IndexedDB), not on a server.
 
@@ -42,6 +55,18 @@ flowchart LR
 3. `lib/ai/verify.ts` checks every suggestion again without the model: any number, known skill, or capitalized name that is not in your original resume marks it "Check this".
 4. Marked suggestions are never accepted by "Accept all safe". You decide.
 
+## Design system
+
+Fitted's UI is built on a small token-based design system with a Stripe-inspired structure.
+
+- **Tokens** are CSS custom properties in `app/globals.css`, mapped into Tailwind CSS v4 with `@theme inline`, so a utility such as `bg-primary` works in both themes.
+- **Light and dark.** Dark mode swaps the variable values under `[data-theme="dark"]`, set before first paint from the saved choice or the system setting, so components never branch on theme.
+- **One primary (blue) and one secondary (teal)** colour, plus calm neutrals.
+- **Components** live in `components/ui` and use Radix for behaviour (for example Tabs). Screens compose them and avoid raw colour utilities.
+- **`cn()`** (clsx + tailwind-merge) merges class overrides predictably.
+- **Accessible.** Colour pairs are chosen for WCAG AA contrast, and axe checks run in the end-to-end tests.
+- **Documented live** at `/design-system` (run the app and open the "Design system" link in the header).
+
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · Radix UI · Anthropic TypeScript SDK (Claude Opus 5.5) · Zod · unpdf · mammoth · @react-pdf/renderer · Upstash · Vitest · Playwright · axe-core · GitHub Actions · Vercel
@@ -68,6 +93,14 @@ npm run dev
 ```bash
 npm test          # unit tests (Vitest)
 npm run test:e2e  # end-to-end + accessibility (Playwright, mock AI)
+```
+
+To regenerate the screenshots in `docs/screenshots`, build the app, start it in mock mode on port 3100, then run the script:
+
+```bash
+npm run build
+MOCK_AI=1 npm run start -- --port 3100   # in another terminal
+npm run screenshots
 ```
 
 ## Limits
