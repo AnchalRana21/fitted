@@ -22,7 +22,7 @@ Success criteria:
 
 ### In v1
 
-- Resume input: upload PDF or DOCX (max 5 MB), or paste plain text.
+- Resume input: upload PDF or DOCX (max 4 MB, under Vercel's request body limit), or paste plain text.
 - Job input: paste job description text (max 15,000 characters).
 - Analysis: match score, matched skills, missing skills, keyword gaps, seniority fit, short summary.
 - Rewrite: per-bullet suggestions with accept, reject and inline edit, shown as a side-by-side diff.
@@ -60,7 +60,7 @@ Login, server database, job-URL scraping, multiple resume templates, multiple la
 
 | Route | Input | Output |
 |---|---|---|
-| `POST /api/parse` | multipart file (PDF/DOCX, ≤ 5 MB) | `{ text: string }` (the client splits it into sections, so pasted and uploaded resumes go through the same parser) |
+| `POST /api/parse` | multipart file (PDF/DOCX, ≤ 4 MB) | `{ text: string }` (the client splits it into sections, so pasted and uploaded resumes go through the same parser) |
 | `POST /api/analyze` | `{ resume: Resume, job: string }` | stream of partial `Analysis` JSON |
 | `POST /api/rewrite` | `{ resume: Resume, job: string, analysis: Analysis }` | stream of partial `Rewrite` JSON |
 | `POST /api/cover-letter` | `{ resume: Resume, job: string, tone: Tone }` | text stream |
