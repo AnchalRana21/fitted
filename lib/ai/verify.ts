@@ -9,13 +9,14 @@ const SKILL_TERMS = new Set([
   "mongodb", "redis", "graphql", "docker", "kubernetes", "aws", "gcp", "azure", "terraform",
   "jest", "vitest", "cypress", "playwright", "tailwind", "figma", "django", "flask", "fastapi",
   "kafka", "spark", "tensorflow", "pytorch", "llm", "rag", "redux", "webpack", "vite",
+  "postgres", "golang", "reactjs", "vue.js", "nestjs", ".net",
 ]);
 
 function tokens(text: string): Set<string> {
   return new Set(
     text
       .toLowerCase()
-      .split(/[^a-z0-9+#.]+/)
+      .split(/[^\p{L}\p{N}+#.]+/u)
       .map((t) => t.replace(/\.+$/, ""))
       .filter(Boolean),
   );
@@ -29,9 +30,10 @@ function numbers(text: string): Set<string> {
 function properNouns(text: string): string[] {
   return text.split(/(?<=[.!?])\s+/).flatMap((sentence) => {
     const trimmed = sentence.trim();
-    return [...trimmed.matchAll(/\b[A-Z][A-Za-z0-9+#.]*/g)]
+    return [...trimmed.matchAll(/(?<![\p{L}\p{N}])\p{Lu}[\p{L}\p{N}+#.]*/gu)]
       .filter((match) => match.index !== 0)
-      .map((match) => match[0].replace(/\.+$/, "").toLowerCase());
+      .map((match) => match[0].replace(/\.+$/, "").toLowerCase())
+      .filter((word) => word !== "i");
   });
 }
 

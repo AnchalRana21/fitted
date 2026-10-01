@@ -24,6 +24,27 @@ describe("introducesNewClaims", () => {
   });
 });
 
+describe("introducesNewClaims extras", () => {
+  it("flags newly added skill aliases", () => {
+    expect(introducesNewClaims("Built APIs in Python", "Built APIs in Python and postgres")).toBe(true);
+  });
+
+  it("handles non-ASCII proper nouns", () => {
+    expect(introducesNewClaims("Worked in Zürich", "Led a team in Zürich")).toBe(false);
+    expect(introducesNewClaims("Worked in Zürich", "Led a team in Ørsted")).toBe(true);
+  });
+
+  it("never flags the pronoun I", () => {
+    expect(introducesNewClaims("Built dashboards", "Built dashboards that I designed.")).toBe(false);
+  });
+
+  it("compares numbers and symbol skills exactly", () => {
+    const original = "Used React, Next.js and C# for 1,200 users";
+    expect(introducesNewClaims(original, "Used C#, React and Next.js for 1,200 users.")).toBe(false);
+    expect(introducesNewClaims(original, "Used C#, React and Next.js for 1200 users.")).toBe(true);
+  });
+});
+
 describe("finalizeRewrite", () => {
   const resume: Resume = {
     sections: [{ id: "s0", title: "Experience", bullets: [{ id: "s0-b0", text: "Built dashboards in React." }] }],
