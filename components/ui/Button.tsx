@@ -8,7 +8,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-primary text-on-primary shadow-sm hover:bg-primary-hover",
   secondary: "border border-border-strong bg-surface text-ink shadow-sm hover:bg-surface-muted",
   ghost: "text-ink-2 hover:bg-surface-muted hover:text-ink",
-  success: "bg-secondary text-on-secondary shadow-sm hover:opacity-90",
+  success: "bg-secondary text-on-secondary shadow-sm hover:bg-secondary-hover",
 };
 
 const SIZES: Record<ButtonSize, string> = {

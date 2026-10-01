@@ -10,7 +10,7 @@ import { buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/ui/Tabs";
 import { useStream } from "@/hooks/useStream";
-import { applyDecisions, initialDecisions } from "@/lib/apply";
+import { applyDecisions, initialDecisions, type Decisions } from "@/lib/apply";
 import { getRun, saveRun, type Run } from "@/lib/runs";
 import { AnalysisSchema, RewriteSchema, type Analysis } from "@/lib/schemas";
 import type { DeepPartial } from "@/lib/types";
@@ -75,6 +75,11 @@ export function TailorView({ id }: { id: string }) {
     }
   }, [run, analysis, rewrite]);
 
+  // Decisions as they were when the rewrite first appeared on screen (saved, or freshly streamed).
+  // Only lines whose decision changes after that flash in the preview.
+  const [baseline, setBaseline] = useState<Decisions | null>(null);
+  if (run?.rewrite && baseline === null) setBaseline(run.decisions);
+
   if (loadFailed) {
     return (
       <StateCard title={"Couldn't open this run"}>
@@ -111,7 +116,10 @@ export function TailorView({ id }: { id: string }) {
   const accepted = suggestions.filter((s) => run.decisions[s.bulletId]?.status === "accepted").length;
   const changedIds = new Set(
     Object.entries(run.decisions)
-      .filter(([, decision]) => decision.status === "accepted")
+      .filter(([bulletId, d]) => {
+        const before = baseline?.[bulletId];
+        return d.status === "accepted" && (before?.status !== d.status || before.text !== d.text);
+      })
       .map(([bulletId]) => bulletId),
   );
 

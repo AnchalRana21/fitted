@@ -46,7 +46,7 @@ export function ExportActions({ resume, className }: { resume: Resume; className
       </Button>
       <CopyButton text={resumeToMarkdown(resume)} label="Copy as Markdown" size="sm" />
       {badChars.length > 0 && (
-        <Alert tone="warning" className="basis-full">
+        <Alert tone="warning" role="status" className="basis-full">
           The PDF can&apos;t show some characters in your resume ({badChars.slice(0, 8).join(" ")}). Copy as Markdown
           instead, or replace them.
         </Alert>

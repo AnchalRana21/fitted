@@ -59,7 +59,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
       )}
       <div className="grid gap-4 text-sm md:grid-cols-2">
         <div>
-          <h4 className={LABEL}>Original</h4>
+          <p className={LABEL}>Original</p>
           <p className="mt-1">
             {parts.original.map((part, i) =>
               part.changed ? (
@@ -73,7 +73,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
           </p>
         </div>
         <div>
-          <h4 className={LABEL}>Suggested</h4>
+          <p className={LABEL}>Suggested</p>
           {editing ? (
             <>
               <label htmlFor={editId} className="sr-only">
@@ -145,7 +145,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
               <Button
                 variant="secondary"
                 size="sm"
-                className={cn(decision.status === "rejected" && "bg-surface-muted")}
+                className={cn(decision.status === "rejected" && "border-ink-3 bg-border")}
                 aria-pressed={decision.status === "rejected"}
                 onClick={() => onChange({ ...decision, status: decision.status === "rejected" ? "pending" : "rejected" })}
               >

@@ -14,13 +14,13 @@ export function LivePreview({ resume, changedIds }: { resume: Resume; changedIds
       </div>
       {/*
         Deliberate literal colours: the preview is white "paper" in both themes because it mirrors the PDF.
-        The flash token is pinned to its light value so highlighted lines stay readable on paper in dark mode.
+        The flash tint is pinned to the light-theme teal so changed lines flash the same on paper in both themes.
       */}
       <div
         role="region"
         tabIndex={0}
         aria-label="Resume preview"
-        className="max-h-[calc(100vh-12rem)] overflow-auto rounded-md border border-border bg-[#ffffff] p-6 text-[#0d1b2a] [--c-secondary-subtle:#d9f3ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-8"
+        className="max-h-[calc(100vh-12rem)] overflow-auto rounded-md border border-border bg-[#ffffff] p-6 text-[#0d1b2a] [--c-secondary:#0d7a70] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-8"
       >
         <ResumePreview resume={resume} changedIds={changedIds} />
       </div>

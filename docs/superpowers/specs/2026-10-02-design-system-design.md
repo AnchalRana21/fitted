@@ -40,6 +40,7 @@ All tokens are CSS custom properties, mapped into Tailwind v4 with `@theme inlin
 | primary-subtle | #E8F1FC | #13294A | tints |
 | primary-text | #0A56B3 | #8CC2FF | primary-coloured text on surfaces |
 | secondary | #0D7A70 | #2CC3B0 | accepted state, success |
+| secondary-hover | #0A665E | #4FD3C2 | success button hover (white 6.8:1 / #0B1220 10.2:1) |
 | on-secondary | #FFFFFF | #0B1220 | |
 | secondary-subtle | #D9F3EF | #0F2F30 | added-word highlight, accepted card bg |
 | secondary-text | #08594F | #8CE8DB | |

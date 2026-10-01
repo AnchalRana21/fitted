@@ -9,7 +9,7 @@ const twMerge = extendTailwindMerge({
       color: [
         "canvas", "surface", "surface-muted", "band", "ink", "ink-2", "ink-3", "border", "border-strong", "input",
         "primary", "primary-hover", "on-primary", "primary-subtle", "primary-text",
-        "secondary", "on-secondary", "secondary-subtle", "secondary-text",
+        "secondary", "secondary-hover", "on-secondary", "secondary-subtle", "secondary-text",
         "danger", "danger-subtle", "warning-text", "warning-subtle",
       ],
     },
