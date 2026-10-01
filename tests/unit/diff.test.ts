@@ -39,4 +39,24 @@ describe("diffParts", () => {
       });
     }
   });
+
+  it("trims whitespace from highlight edges and bridges small gaps", () => {
+    const o = "Weather app using Next.js and a public API.";
+    const n = "Built a weather app in Next.js that shows data from a public API.";
+    const result = diffParts(o, n);
+    expect(join(result.original)).toBe(o);
+    expect(join(result.suggested)).toBe(n);
+    for (const side of [result.original, result.suggested]) {
+      for (const p of side.filter((x) => x.changed)) expect(p.text).toBe(p.text.trim());
+    }
+    expect(result.suggested.filter((p) => p.changed).map((p) => p.text)).toContain("Built a weather");
+  });
+
+  it("highlights only the added words at the end", () => {
+    const result = diffParts(
+      "Built React dashboards used by 40 internal teams.",
+      "Built React dashboards used by 40 internal teams to explore analytics data.",
+    );
+    expect(result.suggested.filter((p) => p.changed).map((p) => p.text)).toEqual(["to explore analytics data"]);
+  });
 });
