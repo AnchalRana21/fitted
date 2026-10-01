@@ -30,7 +30,7 @@ Success criteria:
 - Export: tailored resume to PDF (single ATS-friendly template) and copy as Markdown.
 - History: past runs stored in the browser (IndexedDB), with list, open and delete.
 - Sample mode: "Try sample" replays a recorded run from a static fixture, with no API call.
-- Rate limit: 5 AI runs per IP per day on the live demo.
+- Rate limit: 15 AI calls per IP per day on the live demo (about 5 full runs with cover letters).
 
 ### Out of v1
 
@@ -48,10 +48,10 @@ Login, server database, job-URL scraping, multiple resume templates, multiple la
 
 - Next.js 16, App Router, TypeScript (strict), Tailwind CSS v4, Radix UI primitives.
 - Server: Next.js route handlers on the Node.js runtime.
-- AI: Anthropic TypeScript SDK (`@anthropic-ai/sdk`), model `claude-sonnet-5-5`. Structured output through tool use, with tool input schemas generated from Zod schemas. Responses are streamed.
+- AI: Anthropic TypeScript SDK (`@anthropic-ai/sdk`), model `claude-opus-5-5` by default, overridable with the `ANTHROPIC_MODEL` env var. Structured output through `output_config.format` (JSON schema generated from Zod with `z.toJSONSchema`, unsupported constraints stripped). Effort `medium` for analysis and rewrite, `low` for the cover letter. Server-side refusal fallbacks enabled (`fallbacks: "default"`). Responses are streamed.
 - Validation: Zod schemas in `lib/schemas.ts`, shared by server and client. Every AI output is validated before being shown as final.
 - Parsing: `unpdf` for PDF text, `mammoth` for DOCX.
-- Rate limiting: Upstash Redis (`@upstash/ratelimit`), sliding window, 5 per IP per 24 hours. Turned off when the Upstash env vars are missing (local development).
+- Rate limiting: Upstash Redis (`@upstash/ratelimit`), sliding window, 15 calls per IP per 24 hours. Turned off when the Upstash env vars are missing (local development).
 - PDF export: `@react-pdf/renderer`, rendered on the client.
 - Client storage: IndexedDB through `idb-keyval`.
 - Hosting: Vercel. Secrets: `ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`.
@@ -60,12 +60,12 @@ Login, server database, job-URL scraping, multiple resume templates, multiple la
 
 | Route | Input | Output |
 |---|---|---|
-| `POST /api/parse` | multipart file (PDF/DOCX, ≤ 5 MB) | `{ text: string, sections: ResumeSection[] }` |
+| `POST /api/parse` | multipart file (PDF/DOCX, ≤ 5 MB) | `{ text: string }` (the client splits it into sections, so pasted and uploaded resumes go through the same parser) |
 | `POST /api/analyze` | `{ resume: Resume, job: string }` | stream of partial `Analysis` JSON |
 | `POST /api/rewrite` | `{ resume: Resume, job: string, analysis: Analysis }` | stream of partial `Rewrite` JSON |
 | `POST /api/cover-letter` | `{ resume: Resume, job: string, tone: Tone }` | text stream |
 
-`/api/analyze`, `/api/rewrite` and `/api/cover-letter` count toward the rate limit. One "run" (analyze + rewrite) costs one unit; the cover letter costs one more unit.
+`/api/analyze`, `/api/rewrite` and `/api/cover-letter` each count as one call toward the rate limit.
 
 ### Core types (Zod, in `lib/schemas.ts`)
 
@@ -76,7 +76,7 @@ Login, server database, job-URL scraping, multiple resume templates, multiple la
 
 ### Streaming
 
-Server handlers forward the SDK stream to the client as newline-delimited JSON events (`{ type: "partial", data }`, `{ type: "done", data }`, `{ type: "error", message }`). The `useStream<T>` hook in `hooks/useStream.ts` reads the stream, exposes `{ data: Partial<T>, status, error, retry }`, and checks the `done` payload against the Zod schema.
+Server handlers forward the SDK stream to the client as newline-delimited JSON events (`{ type: "partial", data }` for structured output, throttled to one every 100 ms; `{ type: "delta", text }` for the cover letter; `{ type: "done", data }`; `{ type: "error", code, message }`). The `useStream<T>` hook in `hooks/useStream.ts` reads the stream, exposes `{ data: Partial<T>, status, error, retry }`, and checks the `done` payload against the Zod schema.
 
 ### Honesty guard
 
@@ -88,7 +88,7 @@ Server handlers forward the SDK stream to the client as newline-delimited JSON e
 ```
 app/
   page.tsx                 input screen
-  tailor/page.tsx          analysis, rewrite, cover letter, export tabs
+  tailor/[id]/page.tsx     analysis, rewrite, cover letter, export tabs for one saved run
   history/page.tsx
   api/parse/route.ts
   api/analyze/route.ts
