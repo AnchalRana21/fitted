@@ -41,7 +41,7 @@ export function DiffEditor(props: Props) {
             original={originals.get(s.bulletId!)!}
             newText={s.newText!}
             reason={s.reason ?? ""}
-            verify={Boolean(s.verify)}
+            verify={false}
           />
         ))}
       </div>
@@ -65,9 +65,9 @@ export function DiffEditor(props: Props) {
   return (
     <div className="space-y-8">
       <p className="text-sm text-neutral-700" aria-live="polite">
-        {accepted} of {rewrite.suggestions.length} changes accepted. Changes marked &quot;Check this&quot; are never
-        accepted in bulk.
+        {accepted} of {rewrite.suggestions.length} changes accepted.
       </p>
+      <p className="text-sm text-neutral-700">Changes marked &quot;Check this&quot; are never accepted in bulk.</p>
       {bySection.map(({ section, suggestions }) => (
         <section key={section.id} aria-labelledby={`heading-${section.id}`} className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -93,7 +93,7 @@ export function DiffEditor(props: Props) {
           </div>
           {suggestions.map((s) => (
             <SuggestionCard
-              key={`${s.bulletId}-${decisions[s.bulletId]?.text}`}
+              key={s.bulletId}
               original={originals.get(s.bulletId) ?? ""}
               newText={s.newText}
               reason={s.reason}

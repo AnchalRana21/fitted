@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ComponentProps } from "react";
 
 type Variant = "primary" | "secondary" | "ghost";
 
@@ -12,7 +12,7 @@ export function Button({
   variant = "primary",
   className = "",
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
+}: ComponentProps<"button"> & { variant?: Variant }) {
   return (
     <button
       type="button"
