@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import sample from "../../fixtures/sample-run.json";
 
@@ -15,7 +16,7 @@ test("sample run: review, accept and export", async ({ page }) => {
 
   await page.getByRole("tab", { name: "Rewrite" }).click();
   await expect(page.getByRole("article")).toHaveCount(5);
-  await expect(page.getByText("Check this: it adds a detail")).toHaveCount(1);
+  await expect(page.getByRole("tabpanel", { name: "Rewrite" }).getByText("Check this: it adds a detail")).toHaveCount(1);
 
   const first = page.getByRole("article").first();
   await first.getByRole("button", { name: "Accept", exact: true }).click();
@@ -30,6 +31,9 @@ test("sample run: review, accept and export", async ({ page }) => {
     page.getByRole("button", { name: "Download PDF" }).click(),
   ]);
   expect(download.suggestedFilename()).toBe("alex-morgan-resume.pdf");
+  const bytes = await fs.promises.readFile(await download.path());
+  expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+  expect(bytes.length).toBeGreaterThan(1000);
 });
 
 test("pasted resume streams analysis and suggestions from the API", async ({ page }) => {
