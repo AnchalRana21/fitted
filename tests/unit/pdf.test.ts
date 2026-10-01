@@ -11,3 +11,27 @@ it("renders a PDF", async () => {
   const buf = await renderToBuffer(element);
   expect(buf.subarray(0, 4).toString()).toBe("%PDF");
 });
+
+it("renders every section layout", async () => {
+  const resume = parseSections(
+    [
+      "Alex Morgan",
+      "Frontend Engineer — React · TypeScript",
+      "Pune, India · alex@example.com · +1 555 010 0199",
+      "SUMMARY",
+      "Builds React apps. Owns features",
+      "end to end.",
+      "SKILLS",
+      "Frontend: React, Next.js",
+      "EXPERIENCE",
+      "Globex — Remote | Engineer Jul 2025 – Present",
+      "• Built dashboards.",
+      "EDUCATION",
+      "MSc, 2021–2023 — State University, Springfield",
+      "Coursework: Algorithms",
+    ].join("\n"),
+  );
+  const element = createElement(ResumePdf, { resume }) as unknown as ReactElement<DocumentProps>;
+  const buf = await renderToBuffer(element);
+  expect(buf.subarray(0, 4).toString()).toBe("%PDF");
+});
