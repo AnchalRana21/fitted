@@ -6,12 +6,14 @@ import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { deleteRun, listRuns, type Run } from "@/lib/runs";
 
 export function HistoryList() {
   const [runs, setRuns] = useState<Run[] | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [deleteFailed, setDeleteFailed] = useState(false);
+  const [pending, setPending] = useState<Run | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -29,7 +31,6 @@ export function HistoryList() {
   }, []);
 
   async function remove(run: Run) {
-    if (!window.confirm(`Delete "${run.title}"? This can't be undone.`)) return;
     setDeleteFailed(false);
     try {
       await deleteRun(run.id);
@@ -86,12 +87,23 @@ export function HistoryList() {
             ) : (
               <Badge className="shrink-0">No score yet</Badge>
             )}
-            <Button variant="ghost" size="sm" className="shrink-0" aria-label={`Delete ${run.title}`} onClick={() => remove(run)}>
+            <Button variant="ghost" size="sm" className="shrink-0" aria-label={`Delete ${run.title}`} onClick={() => setPending(run)}>
               Delete
             </Button>
           </Card>
         ))}
       </ul>
+      <ConfirmDialog
+        open={pending !== null}
+        onOpenChange={(open) => {
+          if (!open) setPending(null);
+        }}
+        title="Delete this run?"
+        description={<>&ldquo;{pending?.title}&rdquo; will be removed from this browser. This can&apos;t be undone.</>}
+        confirmLabel="Delete run"
+        tone="danger"
+        onConfirm={() => (pending ? remove(pending) : undefined)}
+      />
     </div>
   );
 }

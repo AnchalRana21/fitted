@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { ErrorNotice } from "@/components/ui/ErrorNotice";
 import { Textarea } from "@/components/ui/Field";
@@ -22,6 +23,7 @@ type Props = { resume: Resume; job: string; saved: Saved; onSave: (coverLetter: 
 export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
   const [tone, setTone] = useState<Tone>(saved?.tone ?? "formal");
   const [text, setText] = useState(saved?.text ?? "");
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const toneAtStart = useRef<Tone>(tone);
   const stream = useStream("/api/cover-letter", TextSchema, (data) => {
     setText(data);
@@ -31,10 +33,13 @@ export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
   const generating = stream.status === "streaming";
   const showStream = generating || (stream.status === "error" && stream.text !== "");
   const shown = showStream ? stream.text : text;
-  const generate = () => {
-    if (text && !window.confirm("Replace your current cover letter?")) return;
+  const start = () => {
     toneAtStart.current = tone;
     void stream.start({ resume, job, tone });
+  };
+  const generate = () => {
+    if (text) setConfirmOpen(true);
+    else start();
   };
 
   return (
@@ -88,6 +93,14 @@ export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
         }}
         placeholder="Pick a tone and press Write cover letter."
         className="h-96 p-4"
+      />
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Replace your cover letter?"
+        description="Writing a new version replaces the current letter, including any edits you made."
+        confirmLabel="Write new version"
+        onConfirm={start}
       />
     </div>
   );

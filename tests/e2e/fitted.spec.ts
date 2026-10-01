@@ -86,7 +86,12 @@ test("history lists and deletes runs", async ({ page }) => {
   await expect(page.getByRole("img", { name: "Match score 72 out of 100" })).toBeVisible();
   await page.getByRole("link", { name: "History" }).click();
   await expect(page.getByText("Match 72/100")).toBeVisible();
-  page.once("dialog", (dialog) => dialog.accept());
+  const title = (await page.getByRole("link", { name: /^Sample:/ }).textContent()) ?? "";
+  expect(title).not.toBe("");
   await page.getByRole("button", { name: /^Delete Sample/ }).click();
+  const dialog = page.getByRole("alertdialog", { name: "Delete this run?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(title);
+  await dialog.getByRole("button", { name: "Delete run" }).click();
   await expect(page.getByText("No tailored resumes yet")).toBeVisible();
 });
