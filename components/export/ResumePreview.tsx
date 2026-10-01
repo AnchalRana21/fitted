@@ -1,13 +1,25 @@
+import { Fragment } from "react";
+import { cn } from "@/lib/cn";
 import { isRoleLine } from "@/lib/resume";
 import { headerParts, sectionKind, splitDates, splitLabel, splitLead } from "@/lib/resume-layout";
 import type { Bullet, Resume, Section } from "@/lib/schemas";
 
 type Parts = { lead: string; sep: string; rest: string } | null;
 
-function Paragraph({ text, parts }: { text: string; parts: Parts }) {
-  if (!parts) return <p>{text}</p>;
+const FLASH = "animate-flash rounded-sm";
+
+/**
+ * Accepted lines flash. Keyed on the text so the flash replays whenever an accepted line changes;
+ * untouched lines keep a stable key.
+ */
+function mark(b: Bullet, changedIds?: Set<string>): { key: string; className?: string } {
+  return changedIds?.has(b.id) ? { key: `${b.id}-${b.text}`, className: FLASH } : { key: b.id };
+}
+
+function Paragraph({ text, parts, className }: { text: string; parts: Parts; className?: string }) {
+  if (!parts) return <p className={className}>{text}</p>;
   return (
-    <p>
+    <p className={className}>
       <strong>{parts.lead}</strong>
       {parts.sep}
       {parts.rest}
@@ -29,16 +41,34 @@ function experienceGroups(bullets: Bullet[]): ({ role: Bullet } | { items: Bulle
 
 function SectionBody({ section, changedIds }: { section: Section; changedIds?: Set<string> }) {
   const kind = sectionKind(section.title);
-  if (kind === "summary") return <p>{section.bullets.map((b) => b.text).join(" ")}</p>;
+  if (kind === "summary") {
+    return (
+      <p>
+        {section.bullets.map((b, i) => {
+          const { key, className } = mark(b, changedIds);
+          return (
+            <Fragment key={key}>
+              {i > 0 && " "}
+              <span className={className}>{b.text}</span>
+            </Fragment>
+          );
+        })}
+      </p>
+    );
+  }
   if (kind === "skills" || kind === "other") {
     const split = kind === "skills" ? splitLabel : splitLead;
-    return section.bullets.map((b) => <Paragraph key={b.id} text={b.text} parts={split(b.text)} />);
+    return section.bullets.map((b) => {
+      const { key, className } = mark(b, changedIds);
+      return <Paragraph key={key} text={b.text} parts={split(b.text)} className={className} />;
+    });
   }
   return experienceGroups(section.bullets).map((group) => {
     if ("role" in group) {
       const parts = splitDates(group.role.text);
+      const { key, className } = mark(group.role, changedIds);
       return (
-        <div key={group.role.id} className="flex justify-between gap-4 pt-1 font-semibold">
+        <div key={key} className={cn("flex justify-between gap-4 pt-1 font-semibold", className)}>
           <span>{parts ? parts.main : group.role.text}</span>
           {parts && <span className="shrink-0 text-right">{parts.dates}</span>}
         </div>
@@ -46,16 +76,14 @@ function SectionBody({ section, changedIds }: { section: Section; changedIds?: S
     }
     return (
       <ul key={group.items[0].id} className="list-disc space-y-0.5 pl-5">
-        {group.items.map((b) =>
-          changedIds?.has(b.id) ? (
-            // Keyed on the text so the flash replays whenever an accepted line changes.
-            <li key={`${b.id}-${b.text}`} className="animate-flash rounded-sm">
+        {group.items.map((b) => {
+          const { key, className } = mark(b, changedIds);
+          return (
+            <li key={key} className={className}>
               {b.text}
             </li>
-          ) : (
-            <li key={b.id}>{b.text}</li>
-          ),
-        )}
+          );
+        })}
       </ul>
     );
   });

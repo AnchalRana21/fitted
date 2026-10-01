@@ -104,6 +104,8 @@ export function TailorView({ id }: { id: string }) {
   }
 
   const analysisData = run.analysis ?? (analysis.partial as DeepPartial<Analysis> | null);
+  const streamedScore = (analysis.partial as DeepPartial<Analysis> | null)?.score;
+  const partialScore = typeof streamedScore === "number" ? streamedScore : undefined;
   const finalResume = applyDecisions(run.resume, run.decisions);
   const suggestions = run.rewrite?.suggestions ?? [];
   const accepted = suggestions.filter((s) => run.decisions[s.bulletId]?.status === "accepted").length;
@@ -117,6 +119,7 @@ export function TailorView({ id }: { id: string }) {
     <main className={`${MAIN} space-y-6`}>
       <SummaryBar
         run={run}
+        partialScore={partialScore}
         finalResume={finalResume}
         accepted={accepted}
         total={suggestions.length}

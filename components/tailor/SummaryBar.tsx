@@ -6,13 +6,21 @@ import { Stat } from "@/components/ui/Stat";
 import type { Run } from "@/lib/runs";
 import type { Resume } from "@/lib/schemas";
 
-type Props = { run: Run; finalResume: Resume; accepted: number; total: number; saveFailed: boolean };
+type Props = {
+  run: Run;
+  /** Score from the analysis stream, shown until the finished analysis is saved. */
+  partialScore?: number;
+  finalResume: Resume;
+  accepted: number;
+  total: number;
+  saveFailed: boolean;
+};
 
-export function SummaryBar({ run, finalResume, accepted, total, saveFailed }: Props) {
+export function SummaryBar({ run, partialScore, finalResume, accepted, total, saveFailed }: Props) {
   return (
     <Card className="flex flex-wrap items-center gap-x-6 gap-y-4 p-4 sm:p-5">
       <div className="flex min-w-0 items-center gap-4">
-        <ScoreRing size="md" score={run.analysis?.score} />
+        <ScoreRing size="md" score={run.analysis?.score ?? partialScore} />
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">Tailoring for</p>
           <h1 className="text-xl font-semibold tracking-tight text-ink">{run.title}</h1>
