@@ -1,8 +1,11 @@
 "use client";
 
 import { Fragment, useEffect, useId, useRef, useState } from "react";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Field";
 import type { Decision } from "@/lib/apply";
+import { cn } from "@/lib/cn";
 import { diffParts } from "@/lib/diff";
 
 type Props = {
@@ -14,11 +17,13 @@ type Props = {
   onChange?: (decision: Decision) => void;
 };
 
-const BORDER = {
-  pending: "border-neutral-200 bg-white",
-  accepted: "border-emerald-600 bg-white",
-  rejected: "border-neutral-200 border-dashed bg-neutral-50",
+const STATE = {
+  pending: "border-border bg-surface",
+  accepted: "border-secondary bg-secondary-subtle/40",
+  rejected: "border-dashed border-border bg-surface-muted",
 };
+
+const LABEL = "text-[11px] font-semibold uppercase tracking-wide text-ink-3";
 
 export function SuggestionCard({ original, newText, reason, verify, decision, onChange }: Props) {
   const editId = useId();
@@ -44,21 +49,21 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
   return (
     <article
       aria-label={`Suggestion: ${original}`}
-      className={`space-y-3 rounded-lg border-2 p-4 ${BORDER[decision?.status ?? "pending"]}`}
+      className={cn("space-y-3 rounded-md border p-4 text-ink transition-colors", STATE[decision?.status ?? "pending"])}
     >
-      {decision?.status === "rejected" && <p className="text-xs font-medium text-neutral-600">Rejected</p>}
-      {verify && (
-        <p className="inline-block rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900">
-          Check this: it adds a detail not found in your resume
-        </p>
+      {(decision?.status === "rejected" || verify) && (
+        <div className="flex flex-wrap gap-2">
+          {decision?.status === "rejected" && <Badge tone="neutral">Rejected</Badge>}
+          {verify && <Badge tone="warning">Check this: it adds a detail not found in your resume</Badge>}
+        </div>
       )}
       <div className="grid gap-4 text-sm md:grid-cols-2">
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-600">Original</h4>
+          <h4 className={LABEL}>Original</h4>
           <p className="mt-1">
             {parts.original.map((part, i) =>
               part.changed ? (
-                <del key={i} className="text-red-700">
+                <del key={i} className="text-danger decoration-danger/60">
                   {part.text}
                 </del>
               ) : (
@@ -68,18 +73,18 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
           </p>
         </div>
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-600">Suggested</h4>
+          <h4 className={LABEL}>Suggested</h4>
           {editing ? (
             <>
               <label htmlFor={editId} className="sr-only">
                 Edit suggestion
               </label>
-              <textarea
+              <Textarea
                 id={editId}
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                className="mt-1 h-24 w-full rounded border border-neutral-300 p-2"
+                className="mt-1 min-h-24"
               />
             </>
           ) : (
@@ -88,7 +93,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
                 part.changed ? (
                   <ins
                     key={i}
-                    className="rounded bg-emerald-100 text-emerald-950 underline decoration-emerald-700 underline-offset-2"
+                    className="rounded-sm bg-secondary-subtle px-0.5 text-secondary-text underline decoration-secondary/50 underline-offset-2"
                   >
                     {part.text}
                   </ins>
@@ -100,12 +105,13 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
           )}
         </div>
       </div>
-      <p className="text-sm text-neutral-600">{reason}</p>
+      <p className="text-sm text-ink-2">{reason}</p>
       {decision && onChange && (
         <div className="flex flex-wrap gap-2">
           {editing ? (
             <Fragment key="edit">
               <Button
+                size="sm"
                 disabled={!draft.trim()}
                 onClick={() => {
                   returnFocus.current = true;
@@ -117,6 +123,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
               </Button>
               <Button
                 variant="ghost"
+                size="sm"
                 onClick={() => {
                   returnFocus.current = true;
                   setEditing(false);
@@ -128,7 +135,8 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
           ) : (
             <Fragment key="view">
               <Button
-                variant={decision.status === "accepted" ? "primary" : "secondary"}
+                variant={decision.status === "accepted" ? "success" : "secondary"}
+                size="sm"
                 aria-pressed={decision.status === "accepted"}
                 onClick={() => onChange({ ...decision, status: decision.status === "accepted" ? "pending" : "accepted" })}
               >
@@ -136,7 +144,8 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
               </Button>
               <Button
                 variant="secondary"
-                className={decision.status === "rejected" ? "bg-neutral-200!" : ""}
+                size="sm"
+                className={cn(decision.status === "rejected" && "bg-surface-muted")}
                 aria-pressed={decision.status === "rejected"}
                 onClick={() => onChange({ ...decision, status: decision.status === "rejected" ? "pending" : "rejected" })}
               >
@@ -145,6 +154,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
               <Button
                 ref={editButtonRef}
                 variant="ghost"
+                size="sm"
                 onClick={() => {
                   setDraft(decision.text);
                   setEditing(true);

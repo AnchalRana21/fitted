@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { ErrorNotice } from "@/components/ui/ErrorNotice";
+import { Textarea } from "@/components/ui/Field";
 import { useStream } from "@/hooks/useStream";
 import type { Resume, Tone } from "@/lib/schemas";
 
@@ -38,28 +39,33 @@ export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
 
   return (
     <div className="space-y-4">
-      <fieldset className="flex flex-wrap items-center gap-4">
-        <legend className="mb-2 text-sm font-semibold">Tone</legend>
-        {TONES.map((t) => (
-          <label key={t.value} className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="tone"
-              value={t.value}
-              checked={tone === t.value}
-              disabled={generating}
-              onChange={() => setTone(t.value)}
-              className="accent-emerald-700"
-            />
-            {t.label}
-          </label>
-        ))}
+      <fieldset>
+        <legend className="mb-2 text-sm font-semibold text-ink">Tone</legend>
+        <div className="flex flex-wrap gap-2">
+          {TONES.map((t) => (
+            <label
+              key={t.value}
+              className="relative cursor-pointer rounded-full border border-border-strong bg-surface px-3 py-1.5 text-sm font-medium text-ink-2 transition-colors not-has-checked:hover:bg-surface-muted not-has-checked:hover:text-ink has-checked:border-primary has-checked:bg-primary-subtle has-checked:text-primary-text has-disabled:cursor-not-allowed has-disabled:opacity-60 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary"
+            >
+              <input
+                type="radio"
+                name="tone"
+                value={t.value}
+                checked={tone === t.value}
+                disabled={generating}
+                onChange={() => setTone(t.value)}
+                className="sr-only"
+              />
+              {t.label}
+            </label>
+          ))}
+        </div>
       </fieldset>
       <div className="flex flex-wrap gap-2">
-        <Button onClick={generate} disabled={generating}>
+        <Button size="sm" onClick={generate} disabled={generating}>
           {generating ? "Writing…" : text ? "Write a new version" : "Write cover letter"}
         </Button>
-        <CopyButton text={shown} label="Copy text" />
+        <CopyButton text={shown} label="Copy text" size="sm" />
       </div>
       {stream.error && <ErrorNotice error={stream.error} onRetry={generate} />}
       <p role="status" className="sr-only">
@@ -68,7 +74,7 @@ export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
       <label htmlFor="cover-letter" className="sr-only">
         Cover letter
       </label>
-      <textarea
+      <Textarea
         id="cover-letter"
         value={shown}
         readOnly={generating}
@@ -81,7 +87,7 @@ export function CoverLetterPanel({ resume, job, saved, onSave }: Props) {
           if (text !== (saved?.text ?? "")) onSave(text ? { tone, text } : undefined);
         }}
         placeholder="Pick a tone and press Write cover letter."
-        className="h-96 w-full rounded-lg border border-neutral-400 bg-white p-4 text-sm leading-relaxed placeholder:text-neutral-500"
+        className="h-96 p-4"
       />
     </div>
   );
