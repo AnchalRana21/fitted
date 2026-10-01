@@ -4,7 +4,7 @@ Tailor your resume to a job description without making anything up.
 
 Fitted compares your resume with a job, scores the match, suggests changes line by line, and writes a cover letter. You accept, reject or edit every change, then export a clean PDF.
 
-**Live demo:** _add the Vercel URL here after deploying_ · No sign-up. Press **Try sample** to see a full run without using any AI calls.
+**Live demo:** **[fitted-nine.vercel.app](https://fitted-nine.vercel.app)** · No sign-up. Press **Try sample** to see a full run without using any AI calls.
 
 <table>
   <tr>
