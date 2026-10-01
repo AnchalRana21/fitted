@@ -8,22 +8,37 @@ async function expectNoViolations(page: Page) {
   expect(results.violations).toEqual([]);
 }
 
-test("home page has no WCAG violations", async ({ page }) => {
-  await page.goto("/");
-  await expectNoViolations(page);
-});
+for (const theme of ["light", "dark"] as const) {
+  test.describe(`${theme} theme`, () => {
+    test.beforeEach(async ({ page }) => {
+      await page.addInitScript((t) => localStorage.setItem("fitted-theme", t), theme);
+    });
 
-test("every tailor tab has no WCAG violations", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Try sample" }).click();
-  await expect(page.getByRole("img", { name: "Match score 72 out of 100" })).toBeVisible();
-  for (const tab of ["Analysis", "Rewrite", "Cover letter", "Export"]) {
-    await page.getByRole("tab", { name: tab }).click();
-    await expectNoViolations(page);
-  }
-});
+    test("home page has no WCAG violations", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await expectNoViolations(page);
+    });
 
-test("history page has no WCAG violations", async ({ page }) => {
-  await page.goto("/history");
-  await expectNoViolations(page);
-});
+    test("every tailor tab has no WCAG violations", async ({ page }) => {
+      await page.goto("/");
+      await page.getByRole("button", { name: "Try sample" }).click();
+      await expect(page.getByRole("img", { name: "Match score 72 out of 100" })).toBeVisible();
+      for (const tab of ["Analysis", "Rewrite", "Cover letter"]) {
+        await page.getByRole("tab", { name: tab }).click();
+        await expectNoViolations(page);
+      }
+    });
+
+    test("history page has no WCAG violations", async ({ page }) => {
+      await page.goto("/history");
+      await expectNoViolations(page);
+    });
+
+    test("design-system page has no WCAG violations", async ({ page }) => {
+      await page.goto("/design-system");
+      await expect(page.getByRole("heading", { level: 1, name: "Fitted design system" })).toBeVisible();
+      await expectNoViolations(page);
+    });
+  });
+}

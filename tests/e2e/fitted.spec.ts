@@ -22,10 +22,8 @@ test("sample run: review, accept and export", async ({ page }) => {
   await first.getByRole("button", { name: "Accept", exact: true }).click();
   await expect(first.getByRole("button", { name: "Accept", exact: true })).toHaveAttribute("aria-pressed", "true");
 
-  await page.getByRole("tab", { name: "Export" }).click();
-  // Tab panels stay mounted (hidden when inactive), so scope to the Export panel.
-  const exportPanel = page.getByRole("tabpanel", { name: "Export" });
-  await expect(exportPanel.getByText(sample.rewrite.suggestions[0].newText)).toBeVisible();
+  const preview = page.getByRole("region", { name: "Live preview" });
+  await expect(preview.getByText(sample.rewrite.suggestions[0].newText)).toBeVisible();
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("button", { name: "Download PDF" }).click(),
