@@ -14,7 +14,11 @@ type Props = {
   onChange?: (decision: Decision) => void;
 };
 
-const BORDER = { pending: "border-neutral-200", accepted: "border-emerald-600", rejected: "border-neutral-200 border-dashed bg-neutral-50" };
+const BORDER = {
+  pending: "border-neutral-200 bg-white",
+  accepted: "border-emerald-600 bg-white",
+  rejected: "border-neutral-200 border-dashed bg-neutral-50",
+};
 
 export function SuggestionCard({ original, newText, reason, verify, decision, onChange }: Props) {
   const editId = useId();
@@ -40,7 +44,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
   return (
     <article
       aria-label={`Suggestion: ${original}`}
-      className={`space-y-3 rounded-lg border-2 bg-white p-4 ${BORDER[decision?.status ?? "pending"]}`}
+      className={`space-y-3 rounded-lg border-2 p-4 ${BORDER[decision?.status ?? "pending"]}`}
     >
       {decision?.status === "rejected" && <p className="text-xs font-medium text-neutral-600">Rejected</p>}
       {verify && (
@@ -115,7 +119,9 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
               >
                 Save and accept
               </Button>
-              <Button variant="ghost" onClick={() => {
+              <Button
+                variant="ghost"
+                onClick={() => {
                   returnFocus.current = true;
                   setEditing(false);
                 }}
@@ -134,7 +140,7 @@ export function SuggestionCard({ original, newText, reason, verify, decision, on
               </Button>
               <Button
                 variant="secondary"
-                className={decision.status === "rejected" ? "bg-neutral-200" : ""}
+                className={decision.status === "rejected" ? "bg-neutral-200!" : ""}
                 aria-pressed={decision.status === "rejected"}
                 onClick={() => onChange({ ...decision, status: decision.status === "rejected" ? "pending" : "rejected" })}
               >
