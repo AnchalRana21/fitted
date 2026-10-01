@@ -18,7 +18,7 @@ export function ErrorNotice({ error, onRetry }: { error: StreamError; onRetry?: 
               </Button>
             )}
             {offerSample && (
-              <Link href="/" className="font-semibold underline underline-offset-2">
+              <Link href="/" className="rounded-sm font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 Try the sample from the home page
               </Link>
             )}

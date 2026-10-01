@@ -72,21 +72,21 @@ export function HistoryList() {
           Couldn&apos;t delete this run.
         </Alert>
       )}
-      <ul className="grid gap-3">
+      <ul className="grid grid-cols-[minmax(0,1fr)] gap-3">
         {runs.map((run) => (
-          <Card as="li" key={run.id} className="flex items-center gap-4 p-4 transition-shadow hover:shadow-md">
+          <Card as="li" key={run.id} className="flex min-w-0 items-center gap-4 p-4 transition-shadow hover:shadow-md">
             <div className="min-w-0 flex-1">
-              <Link href={`/tailor/${run.id}`} className="block truncate font-semibold text-ink hover:text-primary-text">
+              <Link href={`/tailor/${run.id}`} className="block truncate rounded-sm font-semibold text-ink hover:text-primary-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 {run.title}
               </Link>
               <p className="text-xs text-ink-3">{new Date(run.createdAt).toLocaleString()}</p>
             </div>
             {run.analysis ? (
-              <Badge tone="primary">Match {run.analysis.score}/100</Badge>
+              <Badge tone="primary" className="shrink-0">Match {run.analysis.score}/100</Badge>
             ) : (
-              <Badge>No score yet</Badge>
+              <Badge className="shrink-0">No score yet</Badge>
             )}
-            <Button variant="ghost" size="sm" aria-label={`Delete ${run.title}`} onClick={() => remove(run)}>
+            <Button variant="ghost" size="sm" className="shrink-0" aria-label={`Delete ${run.title}`} onClick={() => remove(run)}>
               Delete
             </Button>
           </Card>
