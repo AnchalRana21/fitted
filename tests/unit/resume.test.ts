@@ -54,4 +54,21 @@ describe("resume helpers", () => {
     expect(jobTitle("\n  Frontend Engineer — Brightline\nMore")).toBe("Frontend Engineer — Brightline");
     expect(jobTitle("x".repeat(80))).toBe(`${"x".repeat(59)}…`);
   });
+
+  it("strips accents from file names", () => {
+    const r: Resume = { sections: [{ id: "s0", title: "Header", bullets: [{ id: "s0-b0", text: "José Álvarez" }] }] };
+    expect(resumeFileName(r)).toBe("jose-alvarez-resume.pdf");
+  });
+
+  it("omits the title line when the header has no name", () => {
+    const r: Resume = {
+      sections: [
+        { id: "s0", title: "Header", bullets: [] },
+        { id: "s1", title: "Experience", bullets: [{ id: "s1-b0", text: "Built dashboards in React." }] },
+      ],
+    };
+    const md = resumeToMarkdown(r);
+    expect(md).not.toContain("# \n");
+    expect(md.startsWith("## Experience")).toBe(true);
+  });
 });

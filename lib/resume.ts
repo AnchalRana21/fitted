@@ -19,17 +19,19 @@ export function resumeToMarkdown(resume: Resume): string {
   const blocks = resume.sections.map((s) => {
     if (s.title === "Header") {
       const [name = "", ...rest] = s.bullets.map((b) => b.text);
-      return [`# ${name}`, ...rest].join("\n");
+      return [...(name ? [`# ${name}`] : []), ...rest].join("\n");
     }
     const lines = s.bullets.map((b) => (isRoleLine(b.text) ? `**${b.text}**` : `- ${b.text}`));
     return `## ${s.title}\n\n${lines.join("\n")}`;
   });
-  return `${blocks.join("\n\n")}\n`;
+  return `${blocks.filter(Boolean).join("\n\n")}\n`;
 }
 
 export function resumeFileName(resume: Resume): string {
   const header = resume.sections.find((s) => s.title === "Header");
   const slug = (header?.bullets[0]?.text ?? "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
