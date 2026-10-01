@@ -35,7 +35,7 @@ export function toNdjsonResponse(events: AsyncIterable<StreamEvent>): Response {
     },
   });
   return new Response(body, {
-    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" },
+    headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform", "X-Accel-Buffering": "no" },
   });
 }
 

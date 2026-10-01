@@ -36,6 +36,8 @@ describe("ndjson", () => {
     }
     const response = toNdjsonResponse(events());
     expect(response.headers.get("Content-Type")).toContain("application/x-ndjson");
+    expect(response.headers.get("Cache-Control")).toBe("no-store, no-transform");
+    expect(response.headers.get("X-Accel-Buffering")).toBe("no");
     expect(await collect(response.body!)).toEqual([
       { type: "delta", text: "Hi" },
       { type: "done", data: "Hi" },

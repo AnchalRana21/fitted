@@ -6,7 +6,7 @@ import { CoverLetterRequestSchema } from "@/lib/schemas";
 import { toNdjsonResponse } from "@/lib/stream/ndjson";
 
 export const runtime = "nodejs";
-export const maxDuration = 300;
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
   const guard = await guardAiRequest(req, CoverLetterRequestSchema);
