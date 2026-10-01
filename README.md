@@ -17,6 +17,25 @@ Fitted compares your resume with a job, scores the match, suggests changes line 
   </tr>
 </table>
 
+### Screens
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/home-light.png" alt="Fitted home page in the light theme" /></td>
+    <td><img src="docs/screenshots/home-dark.png" alt="Fitted home page in the dark theme" /></td>
+  </tr>
+  <tr>
+    <td align="center">Home, light</td>
+    <td align="center">Home, dark</td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/design-system-light.png" alt="Fitted design system page showing colours, type and components" /></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">Design system page</td>
+  </tr>
+</table>
+
 <!-- Add docs/demo.gif: record the sample flow (about 20 seconds). -->
 
 ## Features
