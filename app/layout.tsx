@@ -21,10 +21,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               Fitted
             </Link>
             <div className="flex gap-4 text-sm text-neutral-700">
-              <Link href="/history" className="hover:text-neutral-950">
+              <Link href="/history" className="py-2 hover:text-neutral-950">
                 History
               </Link>
-              <a href="https://github.com/AnchalRana21/fitted" className="hover:text-neutral-950">
+              <a href="https://github.com/AnchalRana21/fitted" rel="noopener noreferrer" className="py-2 hover:text-neutral-950">
                 GitHub
               </a>
             </div>

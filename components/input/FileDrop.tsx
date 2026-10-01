@@ -11,6 +11,7 @@ export function FileDrop({ onText }: { onText: (text: string) => void }) {
   const [dragging, setDragging] = useState(false);
 
   async function handle(file: File) {
+    if (state.status === "reading") return;
     if (!detectKind(file.name, file.type)) return setState({ status: "error", message: "Upload a PDF or DOCX file." });
     if (file.size > LIMITS.fileBytes) return setState({ status: "error", message: "File is larger than 4 MB." });
 
@@ -19,9 +20,12 @@ export function FileDrop({ onText }: { onText: (text: string) => void }) {
     form.append("file", file);
     try {
       const res = await fetch("/api/parse", { method: "POST", body: form });
-      const json = (await res.json()) as { text?: string; code?: string; message?: string };
+      const json = (await res.json().catch(() => ({}))) as { text?: string; code?: string; message?: string };
       if (!res.ok || !json.text) {
-        setState({ status: "error", message: json.message ?? "Couldn't read this file." });
+        setState({
+          status: "error",
+          message: json.message ?? (res.status === 413 ? "File is larger than 4 MB." : "Couldn't read this file. Paste the text instead."),
+        });
         if (json.code === "no_text") document.getElementById("resume-text")?.focus();
         return;
       }
@@ -48,8 +52,8 @@ export function FileDrop({ onText }: { onText: (text: string) => void }) {
       onDragLeave={() => setDragging(false)}
       onDrop={onDrop}
       className={`rounded-lg border-2 border-dashed p-6 text-center text-sm ${
-        dragging ? "border-emerald-700 bg-emerald-50" : "border-neutral-300 bg-white"
-      }`}
+        dragging ? "border-emerald-700 bg-emerald-50" : "border-neutral-400 bg-white"
+      } has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-emerald-700`}
     >
       <input
         id="resume-file"
