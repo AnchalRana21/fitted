@@ -57,6 +57,11 @@ describe("parseSections edge cases", () => {
     expect(texts("•Built")).toEqual(["Built"]);
   });
 
+  it("drops lone dash and star lines", () => {
+    expect(texts("Name\n-\nReal")).toEqual(["Name", "Real"]);
+    expect(texts("Name\n*\nReal")).toEqual(["Name", "Real"]);
+  });
+
   it("handles CRLF line endings", () => {
     expect(texts("Line one\r\nLine two")).toEqual(["Line one", "Line two"]);
   });

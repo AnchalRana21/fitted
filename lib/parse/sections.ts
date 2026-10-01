@@ -25,7 +25,7 @@ const HEADINGS = new Set([
   "interests",
 ]);
 
-const BULLET_MARK = /^(?:[•▪◦●·]\s*|[-–*]\s+)/;
+const BULLET_MARK = /^(?:[•▪◦●·]\s*|[-–*](?:\s+|$))/;
 
 function normalize(line: string): string {
   return line.toLowerCase().replace(/[:\s]+$/, "").replace(/\s+/g, " ").trim();
